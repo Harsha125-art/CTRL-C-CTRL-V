@@ -35,7 +35,12 @@ function HireRankContent() {
 
   // FIRST REQUIREMENT: If not signed in, show the role selection & sign in gate first!
   if (!user) {
-    return <SignInGate initialInviteToken={inviteParam} />;
+    return (
+      <>
+        <SignInGate initialInviteToken={inviteParam} />
+        <AuthModal />
+      </>
+    );
   }
 
   return (

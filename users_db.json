@@ -1,0 +1,52 @@
+[
+  {
+    "email": "deekshitha.l24@iiits.com",
+    "name": "Deekshitha",
+    "password": "12345",
+    "role": "candidate",
+    "id": "cand-deekshithal24iiitscom",
+    "avatar": "DE",
+    "createdAt": "2026-09-26T09:55:58.882Z",
+    "lastLogin": "2026-09-26T09:55:58.882Z"
+  },
+  {
+    "email": "deekshitha.l24@iiits.in",
+    "name": "Deekshitha",
+    "password": "12345",
+    "role": "candidate",
+    "id": "cand-deekshithal24iiitsin",
+    "avatar": "DE",
+    "createdAt": "2026-09-26T10:15:11.532Z",
+    "lastLogin": "2026-09-26T10:16:45.155Z"
+  },
+  {
+    "email": "superuser@nexcare.com",
+    "name": "Nexcare",
+    "password": "12345",
+    "role": "recruiter",
+    "id": "recruiter-superusernexcarecom",
+    "avatar": "NE",
+    "createdAt": "2026-09-26T10:15:58.118Z",
+    "lastLogin": "2026-09-26T10:15:58.118Z"
+  },
+  {
+    "email": "superuser1@nexcare.com",
+    "name": "Nexcare",
+    "password": "12345",
+    "role": "recruiter",
+    "id": "recruiter-superuser1nexcarecom",
+    "avatar": "NE",
+    "createdAt": "2026-09-26T10:19:13.292Z",
+    "lastLogin": "2026-09-26T10:19:13.292Z"
+  },
+  {
+    "email": "deekshithalingala13@gmail.com",
+    "name": "Deekshitha",
+    "password": "12345",
+    "role": "candidate",
+    "id": "cand-deekshithalingala13gmailcom",
+    "avatar": "DE",
+    "createdAt": "2026-09-26T10:19:57.854Z",
+    "lastLogin": "2026-09-26T10:19:57.854Z"
+  }
+]

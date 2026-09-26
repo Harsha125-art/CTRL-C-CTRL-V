@@ -12,12 +12,37 @@ export default function AuthModal() {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
   if (!isAuthModalOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(selectedRole, email || undefined, name || undefined);
+    setErrorMsg('');
+    setLoading(true);
+
+    try {
+      const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name, password, role: selectedRole })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        login(selectedRole, email, authMode === 'signup' ? name : data.user?.name);
+        setIsAuthModalOpen(false);
+      } else {
+        setErrorMsg(data.message || 'Authentication failed');
+      }
+    } catch (err) {
+      setErrorMsg('An error occurred during authentication.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -107,27 +132,53 @@ export default function AuthModal() {
 
         <div className="relative flex py-2 items-center">
           <div className="flex-grow border-t border-white/10"></div>
-          <span className="flex-shrink mx-4 text-[10px] uppercase font-bold text-slate-500">Or custom login</span>
+          <span className="flex-shrink mx-4 text-[10px] uppercase font-bold text-slate-500">Or use real auth</span>
           <div className="flex-grow border-t border-white/10"></div>
         </div>
 
+        <div className="flex space-x-4 mb-4 mt-2 justify-center">
+          <button
+            type="button"
+            onClick={() => { setAuthMode('login'); setErrorMsg(''); }}
+            className={`text-xs font-bold uppercase pb-1 border-b-2 ${authMode === 'login' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-500'}`}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAuthMode('signup'); setErrorMsg(''); }}
+            className={`text-xs font-bold uppercase pb-1 border-b-2 ${authMode === 'signup' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-500'}`}
+          >
+            Create Account
+          </button>
+        </div>
+
+        {errorMsg && (
+          <div className="mb-3 p-2 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg text-center">
+            {errorMsg}
+          </div>
+        )}
+
         {/* Custom Form */}
         <form onSubmit={handleSubmit} className="space-y-3.5 mt-2">
-          <div>
-            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-              Your Name
-            </label>
-            <div className="relative">
-              <User className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={selectedRole === 'recruiter' ? 'Sarah Jenkins' : 'Alex Rivera'}
-                className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
+          {authMode === 'signup' && (
+            <div>
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                Your Name
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={selectedRole === 'recruiter' ? 'Sarah Jenkins' : 'Alex Rivera'}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
@@ -137,6 +188,7 @@ export default function AuthModal() {
               <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
               <input
                 type="email"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={selectedRole === 'recruiter' ? 'recruiter@company.com' : 'candidate@gmail.com'}
@@ -145,12 +197,39 @@ export default function AuthModal() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/30 transition-all mt-2"
-          >
-            Enter {selectedRole === 'recruiter' ? 'Recruiter Talent Hub' : 'Interview Portal'} &rarr;
-          </button>
+          <div>
+            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex space-x-3 mt-4">
+            <button
+              type="button"
+              onClick={() => setIsAuthModalOpen(false)}
+              className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold uppercase tracking-wider rounded-xl transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/30 transition-all"
+            >
+              {loading ? 'Wait...' : (authMode === 'login' ? 'Sign In' : 'Create')} &rarr;
+            </button>
+          </div>
         </form>
       </motion.div>
     </div>

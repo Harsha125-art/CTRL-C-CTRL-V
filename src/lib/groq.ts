@@ -1,6 +1,6 @@
 import Groq from 'groq-sdk';
 
-export const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+export const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || 'dummy_key_to_prevent_crash' });
 
 // High-speed, high-quota Groq Free Tier model
 export const GROQ_FREE_TIER_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';

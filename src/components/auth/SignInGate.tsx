@@ -25,12 +25,8 @@ interface SignInGateProps {
 }
 
 export default function SignInGate({ initialInviteToken }: SignInGateProps) {
-  const { login } = useAuth();
+  const { setIsAuthModalOpen } = useAuth();
   const [selectedRole, setSelectedRole] = useState<UserRole>('candidate');
-  const [isCustomMode, setIsCustomMode] = useState(false);
-  const [customName, setCustomName] = useState('');
-  const [customEmail, setCustomEmail] = useState('');
-  const [customCompany, setCustomCompany] = useState('');
   const [inviteNotice, setInviteNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,31 +34,12 @@ export default function SignInGate({ initialInviteToken }: SignInGateProps) {
       const inv = getInvitationByToken(initialInviteToken);
       if (inv) {
         setSelectedRole('candidate');
-        setCustomName(inv.candidateName);
-        setCustomEmail(inv.candidateEmail);
         setInviteNotice(`Invitation detected from ${inv.companyName} for "${inv.jobTitle}"!`);
       }
     }
   }, [initialInviteToken]);
 
-  const handleCustomSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customEmail.trim()) return;
-    login(
-      selectedRole,
-      customEmail.trim(),
-      customName.trim() || (selectedRole === 'recruiter' ? 'Recruiter' : 'Candidate'),
-      customCompany.trim() || undefined
-    );
-  };
 
-  const handleQuickLogin = (role: UserRole) => {
-    if (role === 'recruiter') {
-      login('recruiter', 'sarah.jenkins@techcorp.com', 'Sarah Jenkins', 'TechCorp Talent');
-    } else {
-      login('candidate', 'alex.rivera@example.com', 'Alex Rivera');
-    }
-  };
 
   return (
     <div className="min-h-screen w-full flex flex-col justify-center items-center px-4 py-12 relative z-20 font-sans">
@@ -141,23 +118,12 @@ export default function SignInGate({ initialInviteToken }: SignInGateProps) {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                handleQuickLogin('recruiter');
+                setIsAuthModalOpen(true);
               }}
               className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2"
             >
-              <span>1-Click Recruiter Demo (Sarah Jenkins)</span>
+              <span>Open Authentication Portal</span>
               <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedRole('recruiter');
-                setIsCustomMode(true);
-              }}
-              className="w-full py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold rounded-xl border border-white/5 transition-all text-center block"
-            >
-              Custom Recruiter Sign In &rarr;
             </button>
           </div>
         </motion.div>
@@ -210,138 +176,17 @@ export default function SignInGate({ initialInviteToken }: SignInGateProps) {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                handleQuickLogin('candidate');
+                setIsAuthModalOpen(true);
               }}
               className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2"
             >
-              <span>1-Click Candidate Demo (Alex Rivera)</span>
+              <span>Open Authentication Portal</span>
               <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedRole('candidate');
-                setIsCustomMode(true);
-              }}
-              className="w-full py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold rounded-xl border border-white/5 transition-all text-center block"
-            >
-              Custom Candidate Sign In &rarr;
             </button>
           </div>
         </motion.div>
       </div>
 
-      {/* CUSTOM SIGN-IN MODAL POPUP */}
-      <AnimatePresence>
-        {isCustomMode && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md px-4"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              className="bg-slate-900 border border-slate-700 p-8 rounded-3xl max-w-md w-full shadow-2xl relative"
-            >
-              <div className="flex items-center space-x-3 mb-6">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    selectedRole === 'recruiter'
-                      ? 'bg-indigo-500/20 text-indigo-400'
-                      : 'bg-emerald-500/20 text-emerald-400'
-                  }`}
-                >
-                  {selectedRole === 'recruiter' ? <Briefcase className="w-5 h-5" /> : <GraduationCap className="w-5 h-5" />}
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white capitalize">
-                    {selectedRole} Sign In
-                  </h3>
-                  <p className="text-xs text-slate-400">Enter your credentials to continue</p>
-                </div>
-              </div>
-
-              <form onSubmit={handleCustomSubmit} className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
-                    Your Name
-                  </label>
-                  <div className="relative">
-                    <User className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" />
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Jane Doe"
-                      value={customName}
-                      onChange={(e) => setCustomName(e.target.value)}
-                      className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" />
-                    <input
-                      type="email"
-                      required
-                      placeholder="e.g. jane.doe@example.com"
-                      value={customEmail}
-                      onChange={(e) => setCustomEmail(e.target.value)}
-                      className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                    />
-                  </div>
-                </div>
-
-                {selectedRole === 'recruiter' && (
-                  <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
-                      Company / Organization
-                    </label>
-                    <div className="relative">
-                      <Building className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" />
-                      <input
-                        type="text"
-                        placeholder="e.g. Stripe, Acme Corp"
-                        value={customCompany}
-                        onChange={(e) => setCustomCompany(e.target.value)}
-                        className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsCustomMode(false)}
-                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className={`flex-1 py-3 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-lg ${
-                      selectedRole === 'recruiter'
-                        ? 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30'
-                        : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30'
-                    }`}
-                  >
-                    Sign In &rarr;
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

@@ -103,6 +103,8 @@ export default function InterviewRoom({
   const [sessionElapsedSeconds, setSessionElapsedSeconds] = useState(0);
   const [reviewMarkers, setReviewMarkers] = useState<ReviewMarker[]>([]);
   const [cvAlertMessage, setCvAlertMessage] = useState<string | null>(null);
+  const cvAlertMessageRef = useRef(cvAlertMessage);
+  useEffect(() => { cvAlertMessageRef.current = cvAlertMessage; }, [cvAlertMessage]);
   const cvTrackerRef = useRef(new CvIntegrityTracker());
 
   // Interactive Transcript & Evidence-First Data
@@ -159,6 +161,9 @@ export default function InterviewRoom({
   }, [isSetupMode, isFinished, sessionElapsedSeconds]);
 
   // Session Timer Incrementer
+  const sessionElapsedSecondsRef = useRef(sessionElapsedSeconds);
+  useEffect(() => { sessionElapsedSecondsRef.current = sessionElapsedSeconds; }, [sessionElapsedSeconds]);
+  
   useEffect(() => {
     if (isSetupMode || isFinished) return;
     const interval = setInterval(() => {
@@ -221,7 +226,7 @@ export default function InterviewRoom({
 
           const analysis = cvTrackerRef.current.analyzeFrame(
             results.multiFaceLandmarks,
-            sessionElapsedSeconds
+            sessionElapsedSecondsRef.current
           );
 
           // Update confidence
@@ -239,7 +244,7 @@ export default function InterviewRoom({
 
           if (analysis.hasVisualAlert && analysis.alertMessage) {
             setCvAlertMessage(analysis.alertMessage);
-          } else if (!analysis.hasVisualAlert && cvAlertMessage) {
+          } else if (!analysis.hasVisualAlert && cvAlertMessageRef.current) {
             setCvAlertMessage(null);
           }
 
@@ -261,7 +266,7 @@ export default function InterviewRoom({
         }
       }
     },
-    [sessionElapsedSeconds, cvAlertMessage]
+    []
   );
 
   // Initialize MediaPipe FaceMesh with multi-face detection (maxNumFaces: 4)
@@ -270,8 +275,12 @@ export default function InterviewRoom({
 
     if (!window.FaceMesh) {
       console.warn('MediaPipe FaceMesh not yet available on window');
-      return;
+      const fallback = setTimeout(() => setIsLoaded(true), 3000);
+      return () => clearTimeout(fallback);
     }
+    
+    // Fallback: always remove the loading spinner after 3.5 seconds
+    const globalFallback = setTimeout(() => setIsLoaded(true), 3500);
 
     const faceMesh = new window.FaceMesh({
       locateFile: (file: string) => {
@@ -279,10 +288,10 @@ export default function InterviewRoom({
       },
     });
 
-    // Reconfigure to detect both missing faces and multiple faces
+    // Optimize for speed by only tracking 1 face instead of 4
     faceMesh.setOptions({
-      maxNumFaces: 4,
-      refineLandmarks: true,
+      maxNumFaces: 1,
+      refineLandmarks: false,
       minDetectionConfidence: 0.5,
       minTrackingConfidence: 0.5,
     });
@@ -309,6 +318,7 @@ export default function InterviewRoom({
 
     return () => {
       clearTimeout(timeoutId);
+      clearTimeout(globalFallback);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
       try {
         faceMesh.close();
