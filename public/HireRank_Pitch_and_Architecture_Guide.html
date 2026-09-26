@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HireRank — Judge Presentation & Architecture Guide</title>
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #18181b;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --emerald: #10b981;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+    @media print {
+      body { background: #ffffff !important; color: #000000 !important; }
+      .no-print { display: none !important; }
+      .card { border: 1px solid #ddd !important; background: #fff !important; color: #000 !important; box-shadow: none !important; }
+      h1, h2, h3, strong { color: #000 !important; }
+      p, li, td { color: #333 !important; }
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 32px 16px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 9999px;
+      color: #a5b4fc;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    h1 { font-size: 32px; font-weight: 900; margin: 8px 0 12px 0; color: #ffffff; letter-spacing: -0.5px; }
+    h2 { font-size: 22px; font-weight: 800; color: #ffffff; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 24px; }
+    h3 { font-size: 16px; font-weight: 700; color: #e4e4e7; margin-top: 16px; }
+    p, li { font-size: 14px; color: var(--text-muted); }
+    ul, ol { padding-left: 20px; }
+    li { margin-bottom: 6px; }
+    blockquote {
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid var(--accent);
+      padding: 14px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 16px 0;
+      font-style: italic;
+      color: #e4e4e7;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      text-align: left;
+    }
+    th {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      font-weight: 700;
+    }
+    td { color: var(--text-muted); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      margin-right: 10px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); }
+    pre {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 12px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #a5b4fc;
+      overflow-x: auto;
+    }
+    .step-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- Top Action Bar -->
+    <div class="no-print" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <a href="/" class="btn btn-secondary">&larr; Back to Live App</a>
+      </div>
+      <div>
+        <button onclick="window.print()" class="btn">Print / Save as PDF</button>
+      </div>
+    </div>
+
+    <!-- Header Card -->
+    <div class="card">
+      <span class="badge">BitNBuild Hackathon Presentation</span>
+      <h1>HireRank — Autonomous Technical Interview & Verification Platform</h1>
+      <p style="font-size: 15px; color: #a5b4fc; margin-top: -4px;">
+        Judge Pitch, Architecture Walkthrough & Live Demo Guide
+      </p>
+
+      <h2>1. The 30-Second Elevator Pitch</h2>
+      <blockquote>
+        "Traditional technical hiring is broken: resume screening is flooded with AI buzzwords, while human technical interview loops consume hundreds of engineering hours. On the other hand, automated coding quizzes fail to test real-world architectural thinking, communication, or code reasoning.<br><br>
+        <strong>HireRank</strong> is an autonomous technical interview simulator that unifies batch resume ingestion, client-side Computer Vision integrity tracking, concurrent coding in Monaco, dynamic adaptive question branching, and <strong>Evidence-First Scoring</strong> where every rating is backed by exact verbatim quotes from the candidate transcript."
+      </blockquote>
+    </div>
+
+    <!-- System Architecture Card -->
+    <div class="card">
+      <h2>2. End-to-End System Workflow</h2>
+      <pre>
+[Recruiter Batch Ingestion]
+  -> Multi-PDF Resume Upload (pdf2json + AI extraction of Name, Email, Skills)
+  -> Customize Target Job Description & Role Context
+  -> Automated Email Dispatch (HTML Invite + Unique Token + Mailto Fallback)
+
+[Candidate Live Assessment]
+  -> Opens Email Invite (/ ?invite=inv-xxx)
+  -> Reviews Resume-to-Reality Claims (3 Key Verification Topics)
+  -> Split-Screen Chamber:
+       • Client-Side MediaPipe Edge Face Tracking (Centering & Multi-face review markers)
+       • Explain-While-You-Build (Monaco IDE Python/JS + live speech transcription)
+       • Adaptive Question Engine (Dynamic branching off candidate spoken words)
+
+[Verified Output & Triage]
+  -> Evidence-First Evaluator (Verbatim quotes + exact timestamps)
+  -> Candidate Growth Coach (Personalized study roadmap)
+  -> Recruiter Audit Dossier (Clickable transcript jumps & fast-track triage)
+      </pre>
+    </div>
+
+    <!-- Live Demo Script -->
+    <div class="card">
+      <h2>3. 2-Minute Live Demo Script for Judges</h2>
+      
+      <div class="step-box">
+        <h3>Act 1: Initial Role Gate (15s)</h3>
+        <p>Open <code>http://localhost:3000</code>. Point out the clean initial role gate that separates <strong>Recruiter</strong> and <strong>Candidate</strong> portals. Click <em>"1-Click Recruiter Demo (Sarah Jenkins)"</em>.</p>
+      </div>
+
+      <div class="step-box">
+        <h3>Act 2: Batch Resume Upload & Email Dispatch (35s)</h3>
+        <p>Switch to the <strong>"Batch Upload & Invite"</strong> tab. Drop 2 or 3 PDF resumes. Demonstrate how HireRank automatically extracts candidate names, emails, and technical skills into an interactive queue. Click <em>"Send Email Invitations to All"</em> to trigger automated email dispatch and link generation.</p>
+      </div>
+
+      <div class="step-box">
+        <h3>Act 3: Candidate Adaptive Chamber (40s)</h3>
+        <p>Switch to candidate mode. Open <strong>"Interview Invitations"</strong> to see the pending assessment. Click <em>"Accept & Enter Interview Chamber"</em>. Show the <strong>Resume-to-Reality</strong> claims review, launch the live split-screen chamber with <strong>MediaPipe face tracking</strong>, the <strong>Monaco Editor</strong> workspace, and the non-repeating adaptive question engine.</p>
+      </div>
+
+      <div class="step-box">
+        <h3>Act 4: Evidence-First Scoring & Recruiter Triage (30s)</h3>
+        <p>Conclude the session. Show the candidate's <strong>Growth Coach roadmap</strong>. Switch back to Recruiter view and open the candidate's <strong>Audit Dossier</strong>: demonstrate clicking CV markers to jump to transcript seconds, and how every rubric score quotes the candidate verbatim.</p>
+      </div>
+    </div>
+
+    <!-- Competitive Differentiation Table -->
+    <div class="card">
+      <h2>4. Key Differentiators to Emphasize</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Conventional Approach</th>
+            <th>HireRank Innovation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Proctoring</strong></td>
+            <td>Aggressive auto-disqualification on false positives.</td>
+            <td><strong>Non-disqualifying Review Markers</strong>: Edge CV logs timestamped markers on the recruiter timeline for human review.</td>
+          </tr>
+          <tr>
+            <td><strong>Scoring</strong></td>
+            <td>Opaque numerical score or shallow AI summaries.</td>
+            <td><strong>Evidence-First Scoring</strong>: Every rubric score is backed by an exact verbatim quote from the transcript.</td>
+          </tr>
+          <tr>
+            <td><strong>Adaptive Probes</strong></td>
+            <td>Static LeetCode questions easily memorized.</td>
+            <td><strong>Dynamic Branching Engine</strong>: Questions probe project claims and branch off spoken answers with anti-repetition guards.</td>
+          </tr>
+          <tr>
+            <td><strong>Recruiter Pipeline</strong></td>
+            <td>Fragmented spreadsheets and manual email outreach.</td>
+            <td><strong>Integrated Batch Engine</strong>: Multi-resume upload, automated extraction, and 1-click email invitation links.</td>
+          </tr>
+          <tr>
+            <td><strong>Candidate Value</strong></td>
+            <td>Generic rejection emails with zero feedback.</td>
+            <td><strong>Candidate Growth Coach</strong>: Concrete study roadmap derived from detected technical gaps.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Anticipated Q&A -->
+    <div class="card">
+      <h2>5. Anticipated Judge Q&A</h2>
+      <p><strong>Q: Why run computer vision on the client side?</strong><br>
+      <em>A:</em> Running MediaPipe Face Mesh in the browser eliminates server GPU costs, bandwidth streaming bottlenecks, and ensures candidate privacy since raw camera frames never leave the client's machine.</p>
+
+      <p><strong>Q: How do you prevent AI hallucination during candidate grading?</strong><br>
+      <em>A:</em> The Evidence-First Scoring prompt requires exact verbatim quotes and timestamps from the transcript. If an evaluation criterion lacks exact quote verification, high ratings cannot be awarded.</p>
+    </div>
+
+  </div>
+</body>
+</html>
