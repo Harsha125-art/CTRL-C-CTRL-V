@@ -142,6 +142,21 @@ Traditional technical hiring is broken: resume screening is flooded with AI-gene
 
 ---
 
+## System Architecture
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| Framework | Next.js 14 (App Router), React 18, TypeScript | Unified full-stack app: client UI + serverless API routes |
+| Styling / Motion | Tailwind CSS, Framer Motion | Utility-first styling, animated transitions and glow UI |
+| AI NLP & Speech | Groq Cloud SDK (`llama-3.3-70b-versatile`, `whisper-large-v3`), Web Speech API | Question generation, adaptive follow-ups, evidence-first scoring, transcription, live captions |
+| Edge Computer Vision | MediaPipe FaceMesh + Camera Utils | Multi-face detection, client-side yaw heuristics — no video is ever uploaded to a server |
+| Code Workspace | Monaco Editor (`@monaco-editor/react`) | In-browser Python / JavaScript / TypeScript editor for live coding answers |
+| Resume Parsing | `pdf2json` | Server-side PDF text extraction for resumes |
+| Rate Limiting (optional) | `@upstash/ratelimit`, `@upstash/redis`, `@vercel/kv` | Protects LLM-backed API routes from abuse when configured |
+| Analytics / Visuals | Recharts | Radar charts and score breakdowns on the Recruiter Dashboard |
+| Icons | `lucide-react` | Iconography across both portals |
+| Persistence | Browser `localStorage` (via small store modules) | Candidate sessions, invitations, and auth identity — no external database required to run the demo |
+
 ## 🔌 API Reference
 
 | Endpoint | Method | Description |
