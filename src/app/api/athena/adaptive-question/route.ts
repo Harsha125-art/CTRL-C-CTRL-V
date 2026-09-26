@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Groq from 'groq-sdk';
 import { checkRateLimit } from '@/lib/ratelimit';
 import { AthenaCompetencyState, VerificationTopic } from '@/types/athena';
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+import { createGroqChatCompletion } from '@/lib/groq';
 
 const DEFAULT_COMPETENCIES = [
   'System Architecture & Design',
@@ -94,17 +92,24 @@ Return ONLY a valid JSON object:
   "rationale": "One brief sentence explaining why this question was chosen based on the candidate's previous response and competency limits."
 }`;
 
+    let parsed: any = null;
+
     if (process.env.GROQ_API_KEY) {
-      const chatCompletion = await groq.chat.completions.create({
-        messages: [{ role: 'user', content: prompt }],
-        model: 'llama-3.3-70b-versatile',
-        temperature: 0.5,
-        response_format: { type: 'json_object' },
-      });
+      try {
+        const chatCompletion = await createGroqChatCompletion({
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.5,
+          response_format: { type: 'json_object' },
+        });
 
-      const content = chatCompletion.choices[0]?.message?.content || '{}';
-      const parsed = JSON.parse(content);
+        const content = chatCompletion.choices[0]?.message?.content || '{}';
+        parsed = JSON.parse(content);
+      } catch (aiErr) {
+        console.warn("Groq adaptive question generation failed, falling back to heuristic engine:", aiErr);
+      }
+    }
 
+    if (parsed && parsed.nextQuestion) {
       return NextResponse.json({
         ...parsed,
         updatedCompetencyState: {

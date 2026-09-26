@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
-import Groq from 'groq-sdk';
 import { checkRateLimit } from '@/lib/ratelimit';
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+import { createGroqChatCompletion } from '@/lib/groq';
 
 export async function POST(req: Request) {
   try {
@@ -69,20 +65,37 @@ Candidate's Answer: ${previousAnswer}
       `;
     }
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.3-70b-versatile',
-      temperature: 0.7,
-      response_format: { type: 'json_object' }
-    });
+    let parsedResponse: any = null;
 
-    const content = chatCompletion.choices[0]?.message?.content?.trim();
-    
-    if (!content) {
-      throw new Error("No response from Groq");
+    try {
+      const chatCompletion = await createGroqChatCompletion({
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        response_format: { type: 'json_object' }
+      });
+
+      const content = chatCompletion.choices[0]?.message?.content?.trim();
+      if (content) {
+        parsedResponse = JSON.parse(content);
+      }
+    } catch (aiErr) {
+      console.warn("Groq question generation failed, applying resilient fallback:", aiErr);
     }
 
-    const parsedResponse = JSON.parse(content);
+    if (!parsedResponse || !parsedResponse.question) {
+      const fallbackQuestions = [
+        "To start off, could you walk me through an impactful architecture decision you made in your recent work?",
+        "How do you design database models and indexing strategies to handle high-frequency concurrent writes?",
+        "Walk me through how you troubleshoot and profile an intermittent memory leak or latency spike in production.",
+        "Implement a resilient caching layer with a Least-Recently-Used (LRU) eviction strategy.",
+        "How would you architect a distributed task queue with retry backoff and idempotency guarantees?"
+      ];
+      parsedResponse = {
+        question: fallbackQuestions[Math.min(questionIndex, fallbackQuestions.length - 1)],
+        isCodingQuestion: questionIndex === 3,
+        difficulty: questionIndex === 3 ? "medium" : undefined
+      };
+    }
 
     return NextResponse.json(parsedResponse);
   } catch (error) {

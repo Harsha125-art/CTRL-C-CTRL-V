@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import PDFParser from 'pdf2json';
-import Groq from 'groq-sdk';
 import { checkRateLimit } from '@/lib/ratelimit';
+import { createGroqChatCompletion } from '@/lib/groq';
 
 // Force Node.js runtime for reliable binary Buffer and pdf2json parsing
 export const runtime = 'nodejs';
@@ -120,24 +120,8 @@ export async function POST(req: NextRequest) {
     // Optional AI validation: only run if GROQ_API_KEY is configured
     if (process.env.GROQ_API_KEY) {
       try {
-        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-        const validationPrompt = `You are a strict, expert document classifier.
-Determine if the following extracted text from a PDF is a Resume, CV, or Professional Profile.
-A resume typically contains work experience, education, projects, skills, or contact info.
-Respond strictly in JSON:
-{
-  "isResume": boolean,
-  "reason": "brief explanation"
-}
-
-Text sample:
-"""
-${cleanedText.substring(0, 2000)}
-"""`;
-
-        const chatCompletion = await groq.chat.completions.create({
+        const chatCompletion = await createGroqChatCompletion({
           messages: [{ role: 'user', content: validationPrompt }],
-          model: 'llama-3.3-70b-versatile',
           temperature: 0.0,
           max_tokens: 150,
           response_format: { type: 'json_object' },

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Groq from 'groq-sdk';
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+import { createGroqChatCompletion } from '@/lib/groq';
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,21 +16,29 @@ The candidate is currently struggling with this interview question:
 Provide a brief, single-sentence hint to nudge them in the right direction without giving away the exact answer. 
 Do not write any code for them. Keep it extremely concise and encouraging.`;
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.3-70b-versatile',
-      temperature: 0.7,
-      max_tokens: 150,
-    });
+    let hint = "Consider breaking the problem down into smaller, testable functions and validating boundary conditions.";
 
-    const hint = chatCompletion.choices[0]?.message?.content || "Consider breaking the problem down into smaller, testable functions.";
+    if (process.env.GROQ_API_KEY) {
+      try {
+        const chatCompletion = await createGroqChatCompletion({
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+          max_tokens: 150,
+        });
+
+        if (chatCompletion.choices[0]?.message?.content) {
+          hint = chatCompletion.choices[0].message.content;
+        }
+      } catch (aiErr) {
+        console.warn("Groq hint generation failed, using fallback hint:", aiErr);
+      }
+    }
 
     return NextResponse.json({ hint });
   } catch (error) {
-    console.error('Groq Hint Generation Error:', error);
+    console.error('Hint Generation Error:', error);
     return NextResponse.json(
-      { error: 'Failed to generate hint', details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+      { hint: "Consider identifying the core data structures and edge case boundary conditions." }
     );
   }
 }

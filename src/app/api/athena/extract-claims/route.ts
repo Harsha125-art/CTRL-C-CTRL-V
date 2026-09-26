@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Groq from 'groq-sdk';
 import { checkRateLimit } from '@/lib/ratelimit';
 import { VerificationTopic } from '@/types/athena';
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+import { createGroqChatCompletion } from '@/lib/groq';
 
 export async function POST(req: NextRequest) {
   try {
@@ -74,19 +72,24 @@ Job Description:
 Candidate Resume Text:
 """${resumeText.slice(0, 4000)}"""`;
 
-    let result: { projectClaims: string[]; verificationTopics: VerificationTopic[] };
+    let result: { projectClaims: string[]; verificationTopics: VerificationTopic[] } | null = null;
 
     if (process.env.GROQ_API_KEY) {
-      const chatCompletion = await groq.chat.completions.create({
-        messages: [{ role: 'user', content: prompt }],
-        model: 'llama-3.3-70b-versatile',
-        temperature: 0.3,
-        response_format: { type: 'json_object' },
-      });
+      try {
+        const chatCompletion = await createGroqChatCompletion({
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.3,
+          response_format: { type: 'json_object' },
+        });
 
-      const content = chatCompletion.choices[0]?.message?.content || '{}';
-      result = JSON.parse(content);
-    } else {
+        const content = chatCompletion.choices[0]?.message?.content || '{}';
+        result = JSON.parse(content);
+      } catch (aiErr) {
+        console.warn("Groq claim extraction failed, falling back to deterministic claims:", aiErr);
+      }
+    }
+
+    if (!result || !result.verificationTopics || result.verificationTopics.length === 0) {
       // Fallback deterministic generator if API key is in local demo mode
       result = {
         projectClaims: [

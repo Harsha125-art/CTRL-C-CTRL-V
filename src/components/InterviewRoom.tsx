@@ -627,14 +627,74 @@ export default function InterviewRoom() {
       });
 
       const data = await res.json();
-      if (data.projectClaims) setProjectClaims(data.projectClaims);
-      if (data.verificationTopics) setVerificationTopics(data.verificationTopics);
+      if (data && data.verificationTopics && data.verificationTopics.length > 0) {
+        setProjectClaims(data.projectClaims || []);
+        setVerificationTopics(data.verificationTopics);
+      } else {
+        // Fallback default topics
+        setProjectClaims([
+          "Engineered backend services and scalable APIs",
+          "Implemented database models and optimized latency",
+          "Managed production deployments and monitoring"
+        ]);
+        setVerificationTopics([
+          {
+            id: "topic-1",
+            title: "System Architecture & Request Lifecycle",
+            sourceClaim: "Built high-performance API services",
+            competency: "System Architecture",
+            keyVerificationGoal: "Verify modular decomposition, request latency optimization, and failure handling",
+            suggestedQuestions: ["Can you walk me through the architecture of your primary project?"]
+          },
+          {
+            id: "topic-2",
+            title: "Data Consistency & State Management",
+            sourceClaim: "Implemented scalable data layers",
+            competency: "Database Design",
+            keyVerificationGoal: "Assess edge case handling, concurrency locks, and caching eviction strategies",
+            suggestedQuestions: ["How did you maintain data consistency under high concurrent write loads?"]
+          },
+          {
+            id: "topic-3",
+            title: "Production Resilience & Incident Triage",
+            sourceClaim: "Maintained production uptime and observability",
+            competency: "Engineering Reliability",
+            keyVerificationGoal: "Evaluate real-world debugging, rate-limiting, and error recovery instincts",
+            suggestedQuestions: ["Describe a difficult production bug you solved and the safeguards you added."]
+          }
+        ]);
+      }
 
       setShowVerificationModal(true);
     } catch (e) {
-      console.error('Failed to extract claims:', e);
-      // Fallback directly to rules
-      setShowRulesModal(true);
+      console.warn('Extraction notice, proceeding with default verification topics:', e);
+      setVerificationTopics([
+        {
+          id: "topic-1",
+          title: "System Architecture & Request Lifecycle",
+          sourceClaim: "Core Software Engineering Competency",
+          competency: "System Architecture",
+          keyVerificationGoal: "Verify modular decomposition and architecture trade-offs",
+          suggestedQuestions: ["Can you walk me through the architecture of your primary project?"]
+        },
+        {
+          id: "topic-2",
+          title: "Algorithmic Problem Solving",
+          sourceClaim: "Coding & Data Structures",
+          competency: "Code Implementation",
+          keyVerificationGoal: "Assess code structure and time/space complexity optimization",
+          suggestedQuestions: ["How did you optimize your core algorithms for performance?"]
+        },
+        {
+          id: "topic-3",
+          title: "Production Reliability & Failure Modes",
+          sourceClaim: "Operational Readiness",
+          competency: "Engineering Reliability",
+          keyVerificationGoal: "Evaluate resilience and monitoring instincts",
+          suggestedQuestions: ["How do you protect your systems from cascading outages?"]
+        }
+      ]);
+      setShowVerificationModal(true);
     } finally {
       setIsExtractingClaims(false);
     }
@@ -650,6 +710,10 @@ export default function InterviewRoom() {
   const handleAgreeAndStart = async () => {
     setShowRulesModal(false);
     setIsGenerating(true);
+
+    let firstQ = 'To begin, could you walk me through the overall architecture of your primary project and the key technical trade-offs you made?';
+    let isCoding = false;
+    let initialCompetency = 'System Architecture & Design';
 
     try {
       const res = await fetch('/api/athena/adaptive-question', {
@@ -668,14 +732,21 @@ export default function InterviewRoom() {
         }),
       });
 
-      const data = await res.json();
-      const firstQ = data.nextQuestion || 'To begin, could you walk me through the architecture of your primary project?';
-
+      if (res.ok) {
+        const data = await res.json();
+        if (data.nextQuestion) firstQ = data.nextQuestion;
+        if (data.isCodingQuestion !== undefined) isCoding = data.isCodingQuestion;
+        if (data.competency) initialCompetency = data.competency;
+      }
+    } catch (e) {
+      console.warn('Network notice, using fallback starter question:', e);
+    } finally {
       setCurrentQuestion(firstQ);
       setQuestionIndex(1);
-      setIsCodingQuestion(data.isCodingQuestion || false);
+      setIsCodingQuestion(isCoding);
       setIsSetupMode(false);
-      setTimeLeft(data.isCodingQuestion ? 1800 : 300);
+      setTimeLeft(isCoding ? 1800 : 300);
+      setIsGenerating(false);
 
       // Record first interviewer turn in transcript
       setTranscript([
@@ -685,15 +756,10 @@ export default function InterviewRoom() {
           timestamp: '00:00',
           elapsedSeconds: 0,
           text: firstQ,
-          competency: data.competency || 'System Architecture & Design',
+          competency: initialCompetency,
           questionIndex: 1,
         },
       ]);
-    } catch (e) {
-      console.error('Error starting interview:', e);
-      alert('Failed to initialize interview. Please try again.');
-    } finally {
-      setIsGenerating(false);
     }
   };
 

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Groq from 'groq-sdk';
 import { checkRateLimit } from '@/lib/ratelimit';
 import { TranscriptTurn, RubricEvidenceItem, CandidateStudyTopic } from '@/types/athena';
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+import { createGroqChatCompletion } from '@/lib/groq';
 
 export async function POST(req: NextRequest) {
   try {
@@ -101,16 +99,24 @@ Return ONLY a valid JSON object in this format:
   "triageRecommendation": "hire" | "hold" | "next_round"
 }`;
 
-    if (process.env.GROQ_API_KEY) {
-      const chatCompletion = await groq.chat.completions.create({
-        messages: [{ role: 'user', content: prompt }],
-        model: 'llama-3.3-70b-versatile',
-        temperature: 0.3,
-        response_format: { type: 'json_object' },
-      });
+    let parsed: any = null;
 
-      const content = chatCompletion.choices[0]?.message?.content || '{}';
-      const parsed = JSON.parse(content);
+    if (process.env.GROQ_API_KEY) {
+      try {
+        const chatCompletion = await createGroqChatCompletion({
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.3,
+          response_format: { type: 'json_object' },
+        });
+
+        const content = chatCompletion.choices[0]?.message?.content || '{}';
+        parsed = JSON.parse(content);
+      } catch (aiErr) {
+        console.warn("Groq evidence scoring failed, falling back to deterministic transcript alignment:", aiErr);
+      }
+    }
+
+    if (parsed && parsed.rubricEvidence) {
       return NextResponse.json(parsed);
     } else {
       // Deterministic fallback matching transcript turns
