@@ -208,10 +208,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 📊 Presentation & Judge Pitch Resources
-
-- **Interactive Presentation Document**: Open `http://localhost:3000/HireRank_Pitch_and_Architecture_Guide.html` in your browser for a standalone printable guide with a 1-click **"Print / Save as PDF"** button.
-- **Judge Pitch Markdown Guide**: View [`HIRE_RANK_JUDGE_PITCH_DOCUMENT.md`](./HIRE_RANK_JUDGE_PITCH_DOCUMENT.md) for demo scripts, architectural flows, and judge Q&A preparation.
 
 ---
 
