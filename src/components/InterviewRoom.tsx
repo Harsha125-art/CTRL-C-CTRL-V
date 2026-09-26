@@ -59,6 +59,7 @@ export default function InterviewRoom() {
   const [resumeText, setResumeText] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [isPasteMode, setIsPasteMode] = useState(false);
 
   // Resume-to-Reality States
   const [projectClaims, setProjectClaims] = useState<string[]>([]);
@@ -822,49 +823,82 @@ export default function InterviewRoom() {
 
             {/* Resume Upload Column */}
             <div className="flex flex-col space-y-2.5">
-              <label className="text-xs font-black tracking-widest text-emerald-400 uppercase">
-                2. Upload Resume (PDF)
-              </label>
-              <div className="w-full h-72 bg-black/40 border border-white/10 border-dashed rounded-2xl p-5 flex flex-col items-center justify-center relative transition-all hover:border-emerald-500/50 hover:bg-emerald-500/5 text-center">
-                {isUploading ? (
-                  <div className="flex flex-col items-center animate-pulse">
-                    <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mb-3" />
-                    <p className="text-emerald-300 font-semibold text-sm">Extracting resume claims via AI...</p>
-                  </div>
-                ) : uploadError ? (
-                  <div className="flex flex-col items-center text-center">
-                    <AlertTriangle className="w-10 h-10 text-rose-400 mb-2" />
-                    <p className="text-rose-400 font-bold text-sm">Invalid Resume PDF</p>
-                    <p className="text-xs text-slate-400 mt-1 max-w-xs">{uploadError}</p>
-                    <label className="mt-4 cursor-pointer text-xs text-rose-300 underline font-bold uppercase">
-                      Select Another File
-                      <input type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} />
-                    </label>
-                  </div>
-                ) : resumeText ? (
-                  <div className="flex flex-col items-center animate-in fade-in">
-                    <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mb-2.5 text-emerald-400">
-                      <CheckCircle2 className="w-6 h-6" />
-                    </div>
-                    <p className="text-emerald-300 font-bold text-base">Resume Parsed & Verified!</p>
-                    <p className="text-xs text-slate-400 mt-1">Ready for Resume-to-Reality verification review.</p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-3 border border-emerald-500/20 text-emerald-400">
-                      <Layers className="w-6 h-6" />
-                    </div>
-                    <p className="text-slate-300 font-semibold text-sm mb-1">Click to Upload Resume</p>
-                    <p className="text-xs text-slate-500 mb-4 max-w-xs">
-                      Athena cross-references your claims to build 3 targeted verification topics.
-                    </p>
-                    <label className="cursor-pointer bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
-                      Select Resume PDF
-                      <input type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} />
-                    </label>
-                  </div>
-                )}
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black tracking-widest text-emerald-400 uppercase">
+                  2. Resume (PDF or Paste)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsPasteMode(!isPasteMode)}
+                  className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold underline"
+                >
+                  {isPasteMode ? 'Switch to PDF Upload' : 'Paste Resume Text'}
+                </button>
               </div>
+
+              {isPasteMode ? (
+                <textarea
+                  className="w-full h-72 bg-black/40 border border-white/10 rounded-2xl p-4 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none transition-all shadow-inner"
+                  placeholder="Paste your raw resume text, work experience, and skills directly here..."
+                  value={resumeText}
+                  onChange={(e) => setResumeText(e.target.value)}
+                />
+              ) : (
+                <div className="w-full h-72 bg-black/40 border border-white/10 border-dashed rounded-2xl p-5 flex flex-col items-center justify-center relative transition-all hover:border-emerald-500/50 hover:bg-emerald-500/5 text-center">
+                  {isUploading ? (
+                    <div className="flex flex-col items-center animate-pulse">
+                      <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mb-3" />
+                      <p className="text-emerald-300 font-semibold text-sm">Extracting resume claims via AI...</p>
+                    </div>
+                  ) : uploadError ? (
+                    <div className="flex flex-col items-center text-center">
+                      <AlertTriangle className="w-8 h-8 text-rose-400 mb-2" />
+                      <p className="text-rose-400 font-bold text-xs">PDF Parsing Notice</p>
+                      <p className="text-[11px] text-slate-400 mt-1 max-w-xs">{uploadError}</p>
+                      <div className="flex items-center space-x-3 mt-3">
+                        <label className="cursor-pointer text-[11px] text-rose-300 underline font-bold uppercase">
+                          Try Another PDF
+                          <input type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} />
+                        </label>
+                        <span className="text-slate-600 text-xs">or</span>
+                        <button
+                          type="button"
+                          onClick={() => setIsPasteMode(true)}
+                          className="text-[11px] text-emerald-400 underline font-bold uppercase"
+                        >
+                          Paste Text
+                        </button>
+                      </div>
+                    </div>
+                  ) : resumeText ? (
+                    <div className="flex flex-col items-center animate-in fade-in">
+                      <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mb-2.5 text-emerald-400">
+                        <CheckCircle2 className="w-6 h-6" />
+                      </div>
+                      <p className="text-emerald-300 font-bold text-base">Resume Parsed & Verified!</p>
+                      <p className="text-xs text-slate-400 mt-1">Ready for Resume-to-Reality verification review.</p>
+                      <label className="mt-3 cursor-pointer text-[11px] text-slate-400 hover:text-white underline">
+                        Replace PDF
+                        <input type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} />
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-3 border border-emerald-500/20 text-emerald-400">
+                        <Layers className="w-6 h-6" />
+                      </div>
+                      <p className="text-slate-300 font-semibold text-sm mb-1">Click to Upload Resume</p>
+                      <p className="text-xs text-slate-500 mb-4 max-w-xs">
+                        Athena cross-references your claims to build 3 targeted verification topics.
+                      </p>
+                      <label className="cursor-pointer bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
+                        Select Resume PDF
+                        <input type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} />
+                      </label>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
