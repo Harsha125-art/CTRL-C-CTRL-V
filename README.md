@@ -12,13 +12,13 @@
 <br/>
 
 ## 🌟 Overview
-**HireRank (Project Athena)** is an enterprise-grade AI technical interview platform designed to elevate talent assessment through verifiable behavioral integrity and deep semantic evaluation. It combines **Edge-Computed Computer Vision** with **Cloud LLM Intelligence (Groq + Llama 3.3 70B)** to create a realistic, adaptive, and evidence-grounded interview chamber.
+**HireRank** is an enterprise-grade AI technical interview platform designed to elevate talent assessment through verifiable behavioral integrity and deep semantic evaluation. It combines **Edge-Computed Computer Vision** with **Cloud LLM Intelligence (Groq + Llama 3.3 70B)** to create a realistic, adaptive, and evidence-grounded interview chamber.
 
 Unlike traditional proctoring that relies on aggressive auto-disqualification, Project Athena introduces the **Contextual Integrity Timeline** &mdash; logging observable events (out of frame, multiple faces, tab switching) as timestamped Review Markers for human recruiters while preserving candidate dignity.
 
 ---
 
-## 🏛️ Athena Core Pillars
+## 🏛️ HireRank Core Pillars
 
 ### 1. Resume-to-Reality
 Ingests candidate resume PDFs along with the Job Description to automatically extract key technical claims and formulate **3 Candidate-Reviewable Verification Topics** that anchor the interview.
@@ -71,4 +71,4 @@ UPSTASH_REDIS_REST_TOKEN=your_upstash_token_here (optional)
 npm run dev
 ```
 
-Visit `http://localhost:3000` to access **HireRank (Project Athena)**.
+Visit `http://localhost:3000` to access **HireRank**.
