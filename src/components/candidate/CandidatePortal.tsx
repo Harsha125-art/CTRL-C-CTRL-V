@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import InterviewRoom from '@/components/InterviewRoom';
 import CandidateGrowthCoach from '@/components/athena/CandidateGrowthCoach';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import { getStoredCandidates } from '@/lib/candidateStore';
-import { getCandidateInvitations } from '@/lib/invitationStore';
+import { getCandidateInvitations, getInvitationByToken } from '@/lib/invitationStore';
 import { CandidateSessionRecord, InterviewInvitation } from '@/types/auth';
 import {
   Play,
@@ -27,6 +28,9 @@ import {
 
 export default function CandidatePortal() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const inviteParam = searchParams.get('invite');
+
   const [activeTab, setActiveTab] = useState<'invitations' | 'feedback' | 'live_interview'>('invitations');
   const [invitations, setInvitations] = useState<InterviewInvitation[]>([]);
   const [mySessions, setMySessions] = useState<CandidateSessionRecord[]>([]);
@@ -51,7 +55,14 @@ export default function CandidatePortal() {
 
   useEffect(() => {
     refreshData();
-  }, [user]);
+    if (inviteParam) {
+      const inv = getInvitationByToken(inviteParam);
+      if (inv && inv.status === 'pending') {
+        setActiveInvitation(inv);
+        setActiveTab('live_interview');
+      }
+    }
+  }, [user, inviteParam]);
 
   const handleStartInvitationInterview = (invitation: InterviewInvitation) => {
     setActiveInvitation(invitation);
@@ -440,3 +451,4 @@ export default function CandidatePortal() {
     </div>
   );
 }
+
