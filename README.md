@@ -1,320 +1,221 @@
+# 🛡️ HireRank &mdash; Autonomous Technical Interview & Verification Platform
+
 <div align="center">
-  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/NextJS-Dark.svg" width="60" />
-  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/TailwindCSS-Dark.svg" width="60" />
-  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/TypeScript-Dark.svg" width="60" />
-  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Python-Dark.svg" width="60" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/NextJS-Dark.svg" width="55" alt="Next.js" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/TypeScript.svg" width="55" alt="TypeScript" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/TailwindCSS-Dark.svg" width="55" alt="Tailwind CSS" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Python-Dark.svg" width="55" alt="Python" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/JavaScript.svg" width="55" alt="JavaScript" />
 
   <br/><br/>
 
-  <h1>HireRank &mdash; Project Athena</h1>
-  <p><b>Next-Generation Autonomous Technical Interview Platform with Verifiable CV Integrity & Evidence-First Scoring.</b></p>
+  <p align="center">
+    <b>Next-Generation Autonomous Technical Interview Platform with Client-Side CV Integrity, Multi-Resume Ingestion, Automated Email Invitations & Evidence-First Scoring.</b>
+  </p>
 
-  <p>
-    <img src="https://img.shields.io/badge/Next.js-14.2-black?logo=next.js" />
-    <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" />
-    <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" />
-    <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38BDF8?logo=tailwindcss&logoColor=white" />
-    <img src="https://img.shields.io/badge/Groq-Llama_3.3_70B-orange" />
-    <img src="https://img.shields.io/badge/MediaPipe-FaceMesh-4285F4?logo=google" />
-    <img src="https://img.shields.io/badge/License-Unspecified-lightgrey" />
+  <p align="center">
+    <a href="#-key-features">Key Features</a> •
+    <a href="#-end-to-end-architecture">Architecture</a> •
+    <a href="#-dual-role-portals">Dual-Role Portals</a> •
+    <a href="#-api-reference">API Reference</a> •
+    <a href="#-getting-started">Getting Started</a> •
+    <a href="#-judge-pitch-guide">Presentation Guide</a>
   </p>
 </div>
 
-<br/>
+---
 
-## Table of Contents
+## 🌟 Executive Summary
 
-1. [Overview](#overview)
-2. [Core Pillars](#hirerank-core-pillars)
-3. [End-to-End Flowchart](#end-to-end-flowchart)
-4. [System Architecture](#system-architecture--technology-stack)
-5. [Project Structure](#project-structure)
-6. [Data Model](#data-model-srctypesathenats)
-7. [API Reference](#api-reference)
-8. [Contextual Integrity Timeline (CV Engine)](#contextual-integrity-timeline-cv-engine)
-9. [Getting Started](#getting-started)
-10. [Environment Variables](#environment-variables)
-11. [Usage Walkthrough](#usage-walkthrough)
-12. [Design Philosophy](#design-philosophy)
-13. [Roadmap Ideas](#roadmap-ideas)
-14. [Disclaimer](#disclaimer)
+Traditional technical hiring is broken: resume screening is flooded with AI-generated buzzwords, while human engineering interviews take weeks and cost thousands in engineering hours. On the other hand, automated coding quizzes fail to test real-world architectural thinking, communication, or code reasoning.
+
+**HireRank** solves this by unifying the entire hiring pipeline:
+1. **Recruiters** batch-upload candidate resumes with a target job description; HireRank automatically extracts candidate profiles and dispatches customized interview invitation links via email.
+2. **Candidates** enter a real-time, browser-based split-screen interview chamber powered by **MediaPipe edge computer vision**, concurrent coding in **Monaco Editor** (*Explain-While-You-Build*), and a **dynamically branching AI question engine**.
+3. **Hiring Teams** receive an **Evidence-First Scoring Dossier**: every score is anchored to an exact verbatim quote and timestamp from the interview transcript, with interactive jumps and visual review markers.
+4. **Candidates** receive a personalized **Growth Coach Roadmap** with prioritized study topics to fast-track technical seniority.
 
 ---
 
-## Overview
+## 🚀 Key Features
 
-**HireRank** is an enterprise-grade AI technical interview platform designed to elevate talent assessment through verifiable behavioral integrity and deep semantic evaluation. It combines **Edge-Computed Computer Vision** with **Cloud LLM Intelligence (Groq + Llama 3.3 70B)** to create a realistic, adaptive, and evidence-grounded interview chamber.
+### 1. Multi-Resume Ingestion & AI Candidate Extraction
+- **Batch PDF Upload**: Recruiters can drag-and-drop or select multiple candidate PDF resumes simultaneously.
+- **AI-Powered Identity Extraction** (`/api/extract-candidate-info`): Automatically extracts candidate full names, email addresses, and key technical competencies into an editable queue.
+- **Manual Candidate Addition**: Support for adding candidates manually without a PDF.
 
-Unlike traditional proctoring tools that rely on aggressive auto-disqualification, **Project Athena** introduces the **Contextual Integrity Timeline** &mdash; logging observable events (candidate out of frame, multiple faces, tab switching) as timestamped **Review Markers** for human recruiters to inspect, while preserving candidate dignity and avoiding false-positive rejections.
+### 2. Automated Email Invitation Engine
+- **Direct Email Dispatch** (`/api/send-invitation-email`): Sends formatted HTML interview invitations with hiring company details, evaluated skills, customized notes, and secure assessment links (`/?invite=inv-xxxxxx`).
+- **Resend & Native Mailto Support**: Supports live cloud dispatch via Resend API or direct 1-click `mailto:` triggers into native email clients (Gmail, Outlook, Apple Mail).
+- **Delivery Status Tracking**: Live dashboard monitoring pending invitations and completed assessments.
 
-The application is a single Next.js 14 (App Router) project that serves **two role-based portals** from one authenticated shell:
+### 3. Client-Side Edge Computer Vision Integrity
+- **MediaPipe Face Mesh**: Runs client-side in the candidate's browser with **zero video streaming to servers**, protecting candidate privacy and eliminating server GPU costs.
+- **Contextual Review Markers**: Detects candidate centering and multiple face appearances.
+- **Non-Disqualifying Protocol**: Never auto-disqualifies candidates; instead, logs timestamped Review Markers on the recruiter timeline for human review.
 
-- A **Candidate Portal** for reviewing invitations, taking live AI-proctored interviews, and receiving growth feedback.
-- A **Recruiter Portal** for bulk-processing resumes, sending interview invitations, and triaging finished candidates on a review dashboard.
+### 4. Adaptive Question Engine (No Repetition)
+- **Dynamic Branching**: Probes candidate claims and branches follow-up questions dynamically based on live spoken answers and code.
+- **Anti-Repetition Protection**: Strictly tracks asked questions and enforces a maximum of 2 follow-ups per competency.
+- **Skip Question Button**: Candidates can skip any question to pivot directly to another technical competency.
 
----
+### 5. Explain-While-You-Build (Monaco IDE)
+- Embedded Monaco Editor supporting Python, JavaScript, and TypeScript side-by-side with live webcam feed and real-time speech captions. Candidates write code and speak concurrently.
 
-## HireRank Core Pillars
-
-### 1. Resume-to-Reality
-Ingests a candidate's resume (PDF or pasted text) alongside the target Job Description to automatically extract key technical claims and formulate **3 Candidate-Reviewable Verification Topics** that anchor the interview questioning.
-
-### 2. Adaptive Question Engine
-Dynamically branches follow-up questions based on the candidate's spoken responses and live code, enforced by backend guardrails allowing a **maximum of 2 follow-ups per competency** before the engine rotates to the next topic.
-
-### 3. Explain-While-You-Build
-Seamlessly embeds the Monaco Editor (Python, JavaScript, TypeScript) side-by-side with the webcam feed and live speech captions, so candidates can write code and speak simultaneously without modal barriers.
-
-### 4. Evidence-First Scoring
-Every rubric score returned by the LLM is backed by an **exact verbatim quote** and a **transcript timestamp `[MM:SS]`** cited directly from the interview conversation &mdash; no scoring without a paper trail.
-
-### 5. Dual-Role Post-Interview Portals
-- **Recruiter Triage Dashboard:** Contextual Integrity Timeline with clickable review markers that jump directly to the exact turn in the transcript, competency radar maps, and fast-track hiring decisions (Hire / Next Round / Hold).
-- **Candidate Growth Coach:** A constructive development report providing prioritized study topics, gap analyses, and a technical mastery roadmap.
+### 6. Evidence-First Scoring & Candidate Growth Coach
+- **Verbatim Evidence Rubric**: Every rating is backed by an exact quote and `[MM:SS]` timestamp from the transcript.
+- **Candidate Growth Coach**: Delivers an actionable engineering study roadmap with prioritized study topics and concrete resources.
 
 ---
 
-## End-to-End Flowchart
+## 🏛️ End-to-End Architecture
 
-The diagram below traces the full lifecycle of a candidate through HireRank: authentication, resume ingestion, the adaptive interview loop, real-time integrity monitoring, and the post-interview scoring/triage split between the two portals.
-
-```mermaid
-flowchart TD
-    A[Sign in and choose a role] --> B{Recruiter or Candidate}
-    B --> C[Recruiter uploads resumes and sends an invite]
-    C --> D[Candidate opens the interview]
-    B --> D
-    D --> E[Candidate adds resume and job description]
-    E --> F[Live interview: questions, answers, webcam checks]
-    F --> G[Final scoring with quotes and timestamps]
-    G --> H[Candidate sees growth report]
-    G --> I[Recruiter reviews and makes a hiring decision]
+```
++---------------------------------------------------------------------------------------+
+|                                  1. RECRUITER PORTAL                                  |
+|                                                                                       |
+|   +-----------------------+     +------------------------+     +------------------+   |
+|   |  Batch Upload Resumes | --> | AI Candidate Extractor | --> |  Job Description |   |
+|   |   (Multi-PDF / Text)  |     |  (Name, Email, Skills) |     |  & Custom Note   |   |
+|   +-----------------------+     +------------------------+     +------------------+   |
+|                                                                          |            |
+|                                                                          v            |
+|                                                             +-------------------------+
+|                                                             | Dispatch Email Invites  |
+|                                                             |  (Link: /?invite=...)   |
+|                                                             +-------------------------+
++--------------------------------------------------------------------------|------------+
+                                                                           |
+                                                                           v
++---------------------------------------------------------------------------------------+
+|                                  2. CANDIDATE PORTAL                                  |
+|                                                                                       |
+|   +------------------------+    +-----------------------+    +--------------------+   |
+|   |  Receive Email Invite  | -> |  Resume-to-Reality    | -> | Split-Screen Live  |   |
+|   |  & Login to Assessment |    | 3 Verification Topics |    |  Interview Chamber |   |
+|   +------------------------+    +-----------------------+    +--------------------+   |
+|                                                                          |            |
+|               +----------------------------------------------------------+            |
+|               |                                                                       |
+|               v                                                                       v
+|    [Client-Side Computer Vision]                                          [Live Adaptive Engine]
+|    - MediaPipe Face Mesh on edge                                          - Dynamic question branching
+|    - Centering & multiple face check                                      - Monaco Editor (Python/JS)
+|    - Non-disqualifying Review Markers                                     - Speech-to-text live captions
++--------------------------------------------------------------------------|------------+
+                                                                           |
+                                                                           v
++---------------------------------------------------------------------------------------+
+|                             3. VERIFIED OUTPUT & TRIAGE                               |
+|                                                                                       |
+|           +---------------------------------------------------------------+           |
+|           |                 Evidence-First Scoring Engine                 |           |
+|           |         (Every rating backed by verbatim transcript quote)    |           |
+|           +---------------------------------------------------------------+           |
+|                     |                                             |                   |
+|                     v                                             v                   |
+|       +----------------------------+               +------------------------------+   |
+|       |    Candidate Growth Hub    |               |   Recruiter Audit Dossier    |   |
+|       | - Readiness & depth scores |               | - Clickable CV marker jumps  |   |
+|       | - Prioritized study topics |               | - Verbatim evidence quotes   |   |
+|       | - Concrete learning tasks  |               | - Fast-Track Hire / Hold     |   |
+|       +----------------------------+               +------------------------------+   |
++---------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## System Architecture & Technology Stack
+## 👥 Dual-Role Portals
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| **Framework** | Next.js 14 (App Router), React 18, TypeScript | Unified full-stack app: client UI + serverless API routes |
-| **Styling / Motion** | Tailwind CSS, Framer Motion | Utility-first styling, animated transitions and glow UI |
-| **AI NLP & Speech** | Groq Cloud SDK (`llama-3.3-70b-versatile`, `whisper-large-v3`), Web Speech API | Question generation, adaptive follow-ups, evidence-first scoring, transcription, live captions |
-| **Edge Computer Vision** | MediaPipe FaceMesh + Camera Utils | Multi-face detection, client-side yaw heuristics &mdash; **no video is ever uploaded to a server** |
-| **Code Workspace** | Monaco Editor (`@monaco-editor/react`) | In-browser Python / JavaScript / TypeScript editor for live coding answers |
-| **Resume Parsing** | `pdf2json` | Server-side PDF text extraction for resumes |
-| **Rate Limiting (optional)** | `@upstash/ratelimit`, `@upstash/redis`, `@vercel/kv` | Protects LLM-backed API routes from abuse when configured |
-| **Analytics / Visuals** | Recharts | Radar charts and score breakdowns on the Recruiter Dashboard |
-| **Icons** | `lucide-react` | Iconography across both portals |
-| **Persistence** | Browser `localStorage` (via small store modules) | Candidate sessions, invitations, and auth identity &mdash; no external database required to run the demo |
+### 🏢 Recruiter Portal
+- **Candidate Pipeline**: Search, filter by hiring status (`hire`, `next_round`, `hold`), and view aggregate readiness metrics.
+- **Batch Upload & Invite**: Upload multiple PDF resumes, review extracted candidate names and emails, and batch-dispatch invitation emails.
+- **Candidate Audit Dossier**:
+  - Interactive Contextual Integrity Timeline with clickable review markers that jump to exact moments in the candidate's transcript.
+  - Verbatim Evidence Rubric with scores and reasoning.
+  - Triage decision buttons: *Fast-Track Hire*, *Advance Next Round*, or *Hold*.
 
-> **Note:** This project uses browser `localStorage` as its persistence layer (see `src/lib/candidateStore.ts` and `src/lib/invitationStore.ts`), so it runs entirely without a database for local development and demos. For production you would swap these stores for a real database and add server-side session/auth handling.
+### 🎓 Candidate / Employee Portal
+- **Interview Invitations**: Displays all incoming invitations with company badge, role requirements, expiry date, and recruiter message. Includes 1-click **"Accept & Enter Interview Chamber"**.
+- **My Interviews & Results**: Historical record of completed assessments, overall readiness scores, technical depth metrics, and personalized growth roadmaps.
+- **Self-Paced Practice Chamber**: Allows candidates to configure custom job descriptions and practice independently.
 
 ---
 
-## Project Structure
+## 🔌 API Reference
 
-```
-CTRL-C-CTRL-V-main/
-├── HIRE_RANK_JUDGE_PITCH_DOCUMENT.md      # Pitch/judging narrative for the project
-├── public/
-│   └── HireRank_Pitch_and_Architecture_Guide.html
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx                      # Root layout, fonts, global providers
-│   │   ├── page.tsx                        # Entry point: auth gate -> role routing
-│   │   ├── globals.css
-│   │   └── api/                            # Serverless API routes (see API Reference)
-│   │       ├── athena/
-│   │       │   ├── adaptive-question/route.ts
-│   │       │   ├── evidence-score/route.ts
-│   │       │   └── extract-claims/route.ts
-│   │       ├── evaluate/route.ts
-│   │       ├── extract-candidate-info/route.ts
-│   │       ├── generate-question/route.ts
-│   │       ├── get-hint/route.ts
-│   │       ├── parse-resume/route.ts
-│   │       ├── process-audio/route.ts
-│   │       ├── send-invitation-email/route.ts
-│   │       └── transcribe/route.ts
-│   ├── components/
-│   │   ├── InterviewRoom.tsx               # Core live-interview chamber (webcam, editor, captions, timer)
-│   │   ├── Dashboard.tsx                   # Shared post-answer scoring visualization
-│   │   ├── athena/
-│   │   │   ├── AthenaLoadingSkeleton.tsx
-│   │   │   ├── CandidateGrowthCoach.tsx    # Study roadmap for candidates
-│   │   │   ├── LiveCaptions.tsx            # Real-time speech captioning overlay
-│   │   │   ├── RecruiterDashboard.tsx      # Competency radar + integrity timeline
-│   │   │   └── ResumeToRealityModal.tsx    # Verification topic confirmation modal
-│   │   ├── auth/
-│   │   │   ├── AuthModal.tsx
-│   │   │   └── SignInGate.tsx              # First screen: role + identity selection
-│   │   ├── candidate/
-│   │   │   └── CandidatePortal.tsx         # Invitations / My Interviews / Practice Chamber tabs
-│   │   ├── recruiter/
-│   │   │   └── RecruiterPortal.tsx         # Bulk resume upload, invites, triage dashboard
-│   │   └── ui/
-│   │       ├── button.tsx
-│   │       └── card.tsx
-│   ├── context/
-│   │   └── AuthContext.tsx                 # Mock auth/session + role switching
-│   ├── lib/
-│   │   ├── candidateStore.ts               # Persist/retrieve CandidateSessionRecord objects
-│   │   ├── cvIntegrity.ts                  # CvIntegrityTracker: frame analysis + Review Markers
-│   │   ├── groq.ts                         # Groq SDK client initialization helper
-│   │   ├── invitationStore.ts              # Persist/retrieve interview invitations
-│   │   └── ratelimit.ts                    # Optional Upstash-based rate limiting
-│   └── types/
-│       ├── athena.ts                       # Core interview/evidence/data types
-│       └── auth.ts                         # User / role / session types
-├── next.config.mjs
-├── tailwind.config.ts
-├── tsconfig.json
-└── package.json
-```
+| Endpoint | Method | Description |
+| :--- | :---: | :--- |
+| `/api/parse-resume` | `POST` | Parses binary PDF resumes into structured raw text using `pdf2json`. |
+| `/api/extract-candidate-info` | `POST` | Extracts candidate name, email, and skills from resume text using Groq LLM. |
+| `/api/send-invitation-email` | `POST` | Dispatches formatted HTML interview invitations with unique assessment tokens. |
+| `/api/athena/extract-claims` | `POST` | Cross-references resume text against Job Description to generate 3 verification topics. |
+| `/api/athena/adaptive-question` | `POST` | Generates non-repeating adaptive follow-up questions with competency bounds. |
+| `/api/athena/evidence-score` | `POST` | Evaluates conversation transcript to output rubric ratings with verbatim quotes. |
+| `/api/evaluate` | `POST` | Evaluates individual answers for immediate feedback scoring. |
+| `/api/get-hint` | `POST` | Generates contextual hints with score-cap tracking. |
 
 ---
 
-## Data Model (`src/types/athena.ts`)
+## 🛠️ Technology Stack
 
-The entire interview is described by a small set of well-typed records:
-
-- **`VerificationTopic`** &mdash; a resume claim turned into an interview focus area (`sourceClaim`, `competency`, `suggestedQuestions`).
-- **`ReviewMarker`** &mdash; a timestamped integrity event of type `face_missing`, `multiple_faces`, `tab_switch`, or `audio_anomaly`, with a `severity` of `low` / `medium` / `high`.
-- **`TranscriptTurn`** &mdash; one turn of the conversation (`speaker`, `timestamp`, `text`, optional `codeSnippet` and `competency`).
-- **`RubricEvidenceItem`** &mdash; a scored criterion (0&ndash;100) with a mandatory `verbatimQuote`, `timestamp`, `reasoning`, and whether it represents a `strength` or a `gap`.
-- **`CandidateStudyTopic`** &mdash; a detected gap with a `recommendedAction`, priority, and suggested resources for the Growth Coach.
-- **`AthenaCompetencyState`** &mdash; tracks the `currentCompetency`, `followUpCount` (capped at 2), and how many competencies have been completed.
-- **`InterviewSessionData`** &mdash; the full session bundle: job description, resume text, verification topics, transcript, review markers, rubric evidence, study topics, `overallScore`, and `triageStatus` (`pending` / `hire` / `hold` / `next_round`).
-
----
-
-## API Reference
-
-All routes live under `src/app/api/` and are called from the client via `fetch`. Every LLM-backed route uses the Groq SDK client from `src/lib/groq.ts`.
-
-| Route | Purpose |
-|---|---|
-| `POST /api/parse-resume` | Extracts raw text from an uploaded PDF resume using `pdf2json`. Used by both the candidate setup flow and the recruiter's bulk upload flow. |
-| `POST /api/extract-candidate-info` | Uses the LLM to pull structured candidate info (name, email, key skills) out of parsed resume text, for the recruiter's bulk queue. |
-| `POST /api/athena/extract-claims` | Cross-references resume text against the Job Description to extract technical claims and generate the **3 Verification Topics**. |
-| `POST /api/athena/adaptive-question` | Generates the opening question, competency follow-ups (max 2 per competency), or the next topic's question, based on `AthenaCompetencyState` and conversation history. |
-| `POST /api/transcribe` | Sends a recorded audio segment to Groq's `whisper-large-v3` for speech-to-text transcription. |
-| `POST /api/process-audio` | Supporting audio-processing utility route used alongside transcription/capture. |
-| `POST /api/evaluate` | Scores an individual answer turn (used to drive the live Dashboard feedback and to decide whether a follow-up is warranted). |
-| `POST /api/athena/evidence-score` | Runs the final **Evidence-First Scoring** pass across the whole transcript, returning `RubricEvidenceItem[]` with verbatim quotes and timestamps, plus overall/technical/communication scores. |
-| `POST /api/get-hint` | Produces a contextual hint for the candidate without revealing the answer outright. |
-| `POST /api/generate-question` | General-purpose question generation helper (used outside the strict adaptive-competency loop, e.g. simpler practice flows). |
-| `POST /api/send-invitation-email` | Sends (or simulates sending) an interview invitation email to a queued candidate, and registers the invitation in `invitationStore`. |
-
-> Routes that call Groq can optionally be protected by `src/lib/ratelimit.ts`, which uses Upstash Redis when `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are configured; otherwise rate limiting is a no-op.
+| Layer | Technology |
+| :--- | :--- |
+| **Framework** | Next.js 14 (App Router), React 18, TypeScript |
+| **Styling & Motion** | Tailwind CSS, Framer Motion, Lucide React Icons |
+| **AI LLM Inference** | Groq Cloud SDK (`llama-3.1-8b-instant`) with automatic fallback |
+| **Edge Computer Vision** | Google MediaPipe Face Mesh (CDN, client-side browser execution) |
+| **Code Workspace** | Monaco Editor (`@monaco-editor/react`) |
+| **PDF Processing** | Node.js `pdf2json` binary decoding runtime |
+| **Data Persistence** | Type-safe embedded client storage (`localStorage`) + modular data stores |
 
 ---
 
-## Contextual Integrity Timeline (CV Engine)
-
-Implemented in `src/lib/cvIntegrity.ts` via the `CvIntegrityTracker` class, this engine runs **entirely client-side** against MediaPipe FaceMesh landmarks &mdash; no frame or video is ever sent to a server.
-
-- **Zero faces detected** for a sustained run of frames &mdash; confidence drops to `0`, a debounced `face_missing` marker (severity `medium`) is logged.
-- **More than one face detected** for a sustained run of frames &mdash; confidence drops to `30`, a debounced `multiple_faces` marker (severity `high`) is logged.
-- **Exactly one face** &mdash; a yaw ratio is computed from nose/eye landmark distances to estimate how centered/attentive the candidate is, producing a live confidence score between `10` and `100`.
-- **Tab/window backgrounded** &mdash; the page's `visibilitychange` listener fires `createTabSwitchMarker`, logging a `tab_switch` marker (severity `medium`).
-- All markers are **debounced** (minimum 8 seconds between similar markers) to avoid spamming the timeline, and every marker carries a precise `elapsedSeconds` / `MM:SS` timestamp so recruiters can jump straight to that moment in the transcript.
-
-Crucially, **no marker auto-disqualifies a candidate** &mdash; they are purely advisory signals surfaced on the Recruiter Dashboard's Contextual Integrity Timeline for a human to interpret in context.
-
----
-
-## Getting Started
+## 💻 Getting Started
 
 ### Prerequisites
-- Node.js 18+ and npm
-- A [Groq API key](https://console.groq.com/) (required &mdash; powers all question generation, transcription, and scoring)
-- (Optional) An [Upstash Redis](https://upstash.com/) database for API rate limiting
+- Node.js 18.x or higher
+- npm or yarn
 
-### 1. Clone the repository
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/Harsha125-art/CTRL-C-CTRL-V.git
 cd CTRL-C-CTRL-V
 ```
 
-### 2. Install dependencies
+### 2. Install Dependencies
 ```bash
 npm install
 ```
 
-### 3. Configure environment variables
+### 3. Configure Environment Variables
 Create a `.env.local` file in the project root:
 ```env
+# Required: Groq API Key for LLM Inference
 GROQ_API_KEY=your_groq_api_key_here
-UPSTASH_REDIS_REST_URL=your_upstash_url_here      # optional
-UPSTASH_REDIS_REST_TOKEN=your_upstash_token_here  # optional
+
+# Optional: Resend API Key for live email dispatching
+RESEND_API_KEY=your_resend_api_key_here
+EMAIL_FROM=HireRank <onboarding@resend.dev>
 ```
 
-### 4. Launch the local development server
+### 4. Run the Development Server
 ```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000` to access **HireRank**.
-
-### Other scripts
-```bash
-npm run build   # Production build
-npm run start   # Start the production server
-npm run lint    # Run ESLint
-```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Environment Variables
+## 📊 Presentation & Judge Pitch Resources
 
-| Variable | Required | Description |
-|---|---|---|
-| `GROQ_API_KEY` | Required | Authenticates all Groq SDK calls (`llama-3.3-70b-versatile` for reasoning/scoring, `whisper-large-v3` for transcription). Without it, question generation, evaluation, and transcription routes will fail. |
-| `UPSTASH_REDIS_REST_URL` | Optional | Enables Upstash-backed rate limiting on API routes. |
-| `UPSTASH_REDIS_REST_TOKEN` | Optional | Paired token for the Upstash REST client. |
+- **Interactive Presentation Document**: Open `http://localhost:3000/HireRank_Pitch_and_Architecture_Guide.html` in your browser for a standalone printable guide with a 1-click **"Print / Save as PDF"** button.
+- **Judge Pitch Markdown Guide**: View [`HIRE_RANK_JUDGE_PITCH_DOCUMENT.md`](./HIRE_RANK_JUDGE_PITCH_DOCUMENT.md) for demo scripts, architectural flows, and judge Q&A preparation.
 
 ---
 
-## Usage Walkthrough
-
-**As a Candidate:**
-1. Open the app and choose the **Candidate** role on the sign-in gate.
-2. From the **Invitations** tab, accept an interview invite &mdash; or jump into the **Practice Chamber** for a self-paced session.
-3. Paste or upload your resume and the target Job Description.
-4. Review the **3 auto-generated Verification Topics** in the Resume-to-Reality modal and confirm to begin.
-5. Answer questions by speaking (live-captioned and transcribed), typing, or writing code in the embedded Monaco editor &mdash; the adaptive engine will follow up, up to twice per competency, before rotating to the next topic.
-6. End the interview to receive an **Evidence-First** score breakdown and a personalized **Growth Coach** report under **My Interviews**.
-
-**As a Recruiter:**
-1. Choose the **Recruiter** role on the sign-in gate.
-2. Bulk-upload candidate resumes; HireRank parses and extracts structured candidate info automatically.
-3. Send interview invitations individually or in bulk.
-4. Once candidates complete their interviews, open the **Triage Dashboard** to review competency radars, evidence-backed scores, and the **Contextual Integrity Timeline**.
-5. Click any Review Marker to jump straight to that moment in the transcript, then mark each candidate **Hire**, **Next Round**, or **Hold**.
-
----
-
-## Design Philosophy
-
-- **Dignity over disqualification** &mdash; integrity signals are logged for human review, never used to silently fail a candidate.
-- **Evidence over vibes** &mdash; every score is traceable to an exact quote and timestamp, reducing evaluator bias and making feedback defensible.
-- **No barriers between thinking and doing** &mdash; code, speech, and camera coexist in one chamber instead of forcing candidates through disjointed modals.
-- **Privacy-conscious vision** &mdash; face tracking runs at the edge (in-browser via MediaPipe); raw video never leaves the candidate's machine.
-
----
-
-## Roadmap Ideas
-
-- Swap `localStorage` stores for a persistent database (Postgres/Redis) and real authentication.
-- Add real email delivery (e.g., Resend/SendGrid) behind `send-invitation-email`.
-- Expand `ReviewMarker` types to include end-to-end `audio_anomaly` detection.
-- Add role-based access control and multi-tenant company workspaces.
-- Export the Recruiter Dashboard triage results and transcripts as PDF reports.
-
----
-
-## Disclaimer
-
-This repository was built as a hackathon/demo project ("Project Athena"). It uses browser `localStorage` for persistence and a mock authentication flow &mdash; it is **not production-hardened** for handling real candidate PII, video, or audio data. Before any real-world deployment, add a proper database, authenticated sessions, encrypted storage, and a data-retention/consent policy appropriate for biometric and recorded-interview data.
+## 👥 Contributors & Hackathon Team
+- **Project**: HireRank &mdash; Autonomous Technical Interview & Verification Platform
+- **Repository**: [https://github.com/Harsha125-art/CTRL-C-CTRL-V](https://github.com/Harsha125-art/CTRL-C-CTRL-V)
+- **Built for**: BitNBuild Hackathon
