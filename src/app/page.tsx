@@ -1,23 +1,42 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
+import SignInGate from '@/components/auth/SignInGate';
 import RecruiterPortal from '@/components/recruiter/RecruiterPortal';
 import CandidatePortal from '@/components/candidate/CandidatePortal';
 import AuthModal from '@/components/auth/AuthModal';
 import {
   ShieldCheck,
-  Users,
-  UserCheck,
-  GraduationCap,
-  Sparkles,
   RefreshCw,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 
-function HireRankApp() {
-  const { user, role, switchRole, setIsAuthModalOpen } = useAuth();
+function HireRankContent() {
+  const { user, role, switchRole, logout, isInitialized, setIsAuthModalOpen } = useAuth();
+  const searchParams = useSearchParams();
+  const inviteParam = searchParams.get('invite');
+
+  // Loading state while checking localStorage to prevent layout flashing
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center text-white">
+        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mb-3" />
+        <p className="text-xs text-slate-400 font-mono tracking-widest uppercase">
+          Initializing HireRank...
+        </p>
+      </div>
+    );
+  }
+
+  // FIRST REQUIREMENT: If not signed in, show the role selection & sign in gate first!
+  if (!user) {
+    return <SignInGate initialInviteToken={inviteParam} />;
+  }
 
   return (
     <main className="min-h-screen bg-[#09090b] text-white selection:bg-indigo-500/30 overflow-x-hidden relative font-sans">
@@ -82,17 +101,27 @@ function HireRankApp() {
                   : 'bg-gradient-to-br from-emerald-500 to-teal-600'
               }`}
             >
-              {user?.avatar || (user?.name ? user.name[0] : 'U')}
+              {user.avatar || user.name.slice(0, 2).toUpperCase()}
             </div>
             <div className="text-left hidden sm:block">
               <span className="text-xs font-bold text-white block leading-tight">
-                {user?.name || 'User'}
+                {user.name}
               </span>
               <span className="text-[10px] text-slate-400 font-mono capitalize block leading-tight">
-                {role === 'recruiter' ? 'Recruiter' : 'Employee'}
+                {role === 'recruiter' ? 'Recruiter' : 'Candidate'}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          </button>
+
+          {/* Sign Out Button (Returns directly to the Role Selection Gate) */}
+          <button
+            type="button"
+            onClick={logout}
+            className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 hover:border-rose-500/30 transition-all"
+            title="Sign Out / Switch Identity"
+          >
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </header>
@@ -111,7 +140,15 @@ function HireRankApp() {
 export default function Home() {
   return (
     <AuthProvider>
-      <HireRankApp />
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-[#09090b] flex items-center justify-center text-white">
+            <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+          </div>
+        }
+      >
+        <HireRankContent />
+      </Suspense>
     </AuthProvider>
   );
 }

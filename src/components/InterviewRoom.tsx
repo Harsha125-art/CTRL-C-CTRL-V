@@ -40,6 +40,7 @@ import ResumeToRealityModal from '@/components/athena/ResumeToRealityModal';
 import AthenaLoadingSkeleton from '@/components/athena/AthenaLoadingSkeleton';
 import { useAuth } from '@/context/AuthContext';
 import { saveCandidateSession } from '@/lib/candidateStore';
+import { updateInvitationStatus } from '@/lib/invitationStore';
 
 // Declare types for CDN loaded MediaPipe
 declare global {
@@ -49,7 +50,19 @@ declare global {
   }
 }
 
-export default function InterviewRoom() {
+interface InterviewRoomProps {
+  initialJobDescription?: string;
+  initialResumeText?: string;
+  invitationId?: string;
+  onSessionComplete?: (session: any) => void;
+}
+
+export default function InterviewRoom({
+  initialJobDescription = '',
+  initialResumeText = '',
+  invitationId,
+  onSessionComplete
+}: InterviewRoomProps = {}) {
   const { user } = useAuth();
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -59,8 +72,8 @@ export default function InterviewRoom() {
 
   // Setup Mode & Ingestion States
   const [isSetupMode, setIsSetupMode] = useState(true);
-  const [jobDescription, setJobDescription] = useState('');
-  const [resumeText, setResumeText] = useState('');
+  const [jobDescription, setJobDescription] = useState(initialJobDescription);
+  const [resumeText, setResumeText] = useState(initialResumeText);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [isPasteMode, setIsPasteMode] = useState(false);
@@ -558,25 +571,33 @@ export default function InterviewRoom() {
           ? Math.round(feedbackHistory.reduce((acc, f) => acc + (f.score || 70), 0) / feedbackHistory.length)
           : 82;
         
-        saveCandidateSession({
-          candidateId: user?.id || `cand-${Date.now()}`,
+        const newSessionId = `cand-${Date.now()}`;
+        const newRecord: any = {
+          id: newSessionId,
+          candidateId: user?.id || newSessionId,
           candidateName: user?.name || 'Live Candidate',
           candidateEmail: user?.email || 'candidate@hirerank.internal',
-          appliedRole: 'Senior Fullstack Engineer',
-          completedAt: new Date().toISOString(),
+          jobTitle: 'Senior Fullstack Engineer',
+          date: new Date().toISOString().split('T')[0],
           overallScore: avgScore,
           technicalScore: Math.min(100, avgScore + 4),
           communicationScore: Math.max(60, avgScore - 3),
-          integrityScore: Math.max(50, 100 - (reviewMarkers.length * 8)),
-          verdict: avgScore >= 80 ? 'hire' : avgScore >= 65 ? 'follow_up' : 'pass',
-          triageStatus: 'pending',
+          confidenceScore: Math.max(50, 100 - (reviewMarkers.length * 8)),
+          triageStatus: avgScore >= 80 ? 'hire' : avgScore >= 65 ? 'next_round' : 'hold',
           reviewMarkers,
           transcript: finalTranscriptList,
           rubricEvidence: finalRubric,
           studyTopics: finalStudy,
-          projectClaims: projectClaims.length > 0 ? projectClaims : ['Backend Architecture', 'Concurrency & Latency Optimization'],
-          jobDescription: jobDescription || 'Senior Fullstack Engineer'
-        });
+          feedbackHistory,
+          invitationId
+        };
+        saveCandidateSession(newRecord);
+        if (invitationId) {
+          updateInvitationStatus(invitationId, 'completed', newSessionId);
+        }
+        if (onSessionComplete) {
+          onSessionComplete(newRecord);
+        }
       }
     } catch (e) {
       console.error('Failed to generate evidence scores:', e);

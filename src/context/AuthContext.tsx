@@ -6,36 +6,21 @@ import { UserProfile, UserRole } from '@/types/auth';
 interface AuthContextType {
   user: UserProfile | null;
   role: UserRole;
-  login: (role: UserRole, email?: string, name?: string) => void;
+  isInitialized: boolean;
+  login: (role: UserRole, email?: string, name?: string, company?: string) => void;
   logout: () => void;
   switchRole: (newRole?: UserRole) => void;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
 }
 
-const DEFAULT_CANDIDATE: UserProfile = {
-  id: 'cand-current',
-  name: 'Alex Rivera',
-  email: 'alex.rivera@example.com',
-  role: 'candidate',
-  avatar: 'AR'
-};
-
-const DEFAULT_RECRUITER: UserProfile = {
-  id: 'recruiter-lead',
-  name: 'Sarah Jenkins',
-  email: 'sarah.jenkins@techcorp.com',
-  role: 'recruiter',
-  company: 'TechCorp Talent',
-  avatar: 'SJ'
-};
-
-const AUTH_STORAGE_KEY = 'hirerank_auth_user_v1';
+const AUTH_STORAGE_KEY = 'hirerank_auth_user_v2';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(DEFAULT_CANDIDATE);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
@@ -44,32 +29,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (saved) {
         setUser(JSON.parse(saved));
       } else {
-        setUser(DEFAULT_CANDIDATE);
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(DEFAULT_CANDIDATE));
+        // No auto-login on fresh start: prompts user to choose role first
+        setUser(null);
       }
     } catch (e) {
-      setUser(DEFAULT_CANDIDATE);
+      setUser(null);
+    } finally {
+      setIsInitialized(true);
     }
   }, []);
 
-  const login = (newRole: UserRole, email?: string, name?: string) => {
-    const profile: UserProfile =
-      newRole === 'recruiter'
-        ? {
-            id: 'recruiter-lead',
-            name: name || 'Sarah Jenkins',
-            email: email || 'sarah.jenkins@techcorp.com',
-            role: 'recruiter',
-            company: 'TechCorp Talent',
-            avatar: 'SJ'
-          }
-        : {
-            id: 'cand-current',
-            name: name || 'Alex Rivera',
-            email: email || 'alex.rivera@example.com',
-            role: 'candidate',
-            avatar: 'AR'
-          };
+  const login = (newRole: UserRole, email?: string, name?: string, company?: string) => {
+    let profile: UserProfile;
+
+    if (newRole === 'recruiter') {
+      profile = {
+        id: email ? `recruiter-${email.replace(/[^a-zA-Z0-9]/g, '')}` : 'recruiter-lead',
+        name: name || 'Sarah Jenkins',
+        email: email || 'sarah.jenkins@techcorp.com',
+        role: 'recruiter',
+        company: company || 'TechCorp Talent',
+        avatar: (name ? name.slice(0, 2) : 'SJ').toUpperCase()
+      };
+    } else {
+      profile = {
+        id: email ? `cand-${email.replace(/[^a-zA-Z0-9]/g, '')}` : 'cand-alex',
+        name: name || 'Alex Rivera',
+        email: email || 'alex.rivera@example.com',
+        role: 'candidate',
+        avatar: (name ? name.slice(0, 2) : 'AR').toUpperCase()
+      };
+    }
 
     setUser(profile);
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(profile));
@@ -79,7 +69,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem(AUTH_STORAGE_KEY);
-    setIsAuthModalOpen(true);
   };
 
   const switchRole = (overrideRole?: UserRole) => {
@@ -94,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         role,
+        isInitialized,
         login,
         logout,
         switchRole,
@@ -107,9 +97,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
+  const context = useContext(AuthContext);
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  return ctx;
+  return context;
 }
