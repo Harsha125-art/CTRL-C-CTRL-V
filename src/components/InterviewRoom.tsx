@@ -21,7 +21,8 @@ import {
   CheckCircle2,
   Users,
   VideoOff,
-  Volume2
+  Volume2,
+  SkipForward
 } from 'lucide-react';
 import Dashboard from '@/components/Dashboard';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,6 +38,8 @@ import { CvIntegrityTracker, formatTimestamp } from '@/lib/cvIntegrity';
 import LiveCaptions from '@/components/athena/LiveCaptions';
 import ResumeToRealityModal from '@/components/athena/ResumeToRealityModal';
 import AthenaLoadingSkeleton from '@/components/athena/AthenaLoadingSkeleton';
+import { useAuth } from '@/context/AuthContext';
+import { saveCandidateSession } from '@/lib/candidateStore';
 
 // Declare types for CDN loaded MediaPipe
 declare global {
@@ -47,6 +50,7 @@ declare global {
 }
 
 export default function InterviewRoom() {
+  const { user } = useAuth();
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -70,6 +74,7 @@ export default function InterviewRoom() {
   // Interview Questions & Adaptive Engine States
   const [questionIndex, setQuestionIndex] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState('Loading your first question...');
+  const [askedQuestions, setAskedQuestions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCodingQuestion, setIsCodingQuestion] = useState(false);
   const [codeContent, setCodeContent] = useState('// Write your code here (Python or JavaScript)...');
@@ -468,6 +473,7 @@ export default function InterviewRoom() {
           verificationTopics,
           competencyState,
           questionIndex: questionIndex + 1,
+          askedQuestions: [...askedQuestions, currentQuestion],
         }),
       });
 
@@ -476,6 +482,7 @@ export default function InterviewRoom() {
         const nextQ = adaptiveData.nextQuestion || evaluation.next_question || 'How would you scale this architecture?';
 
         setCurrentQuestion(nextQ);
+        setAskedQuestions((prev) => [...prev, nextQ]);
         setQuestionIndex((prev) => prev + 1);
         setIsCodingQuestion(adaptiveData.isCodingQuestion || false);
         if (adaptiveData.isCodingQuestion) {
@@ -505,6 +512,7 @@ export default function InterviewRoom() {
       } else if (evaluation.next_question) {
         // Fallback to existing evaluation next_question
         setCurrentQuestion(evaluation.next_question);
+        setAskedQuestions((prev) => [...prev, evaluation.next_question]);
         setQuestionIndex((prev) => prev + 1);
         setIsCodingQuestion(evaluation.isCodingQuestion || false);
         setTimeout(() => {
@@ -540,11 +548,87 @@ export default function InterviewRoom() {
 
       if (res.ok) {
         const evidenceData = await res.json();
+        const finalRubric = evidenceData.rubricEvidence || [];
+        const finalStudy = evidenceData.studyTopics || [];
         if (evidenceData.rubricEvidence) setRubricEvidence(evidenceData.rubricEvidence);
         if (evidenceData.studyTopics) setStudyTopics(evidenceData.studyTopics);
+
+        // Compute aggregate score and store session
+        const avgScore = feedbackHistory.length > 0 
+          ? Math.round(feedbackHistory.reduce((acc, f) => acc + (f.score || 70), 0) / feedbackHistory.length)
+          : 82;
+        
+        saveCandidateSession({
+          candidateId: user?.id || `cand-${Date.now()}`,
+          candidateName: user?.name || 'Live Candidate',
+          candidateEmail: user?.email || 'candidate@hirerank.internal',
+          appliedRole: 'Senior Fullstack Engineer',
+          completedAt: new Date().toISOString(),
+          overallScore: avgScore,
+          technicalScore: Math.min(100, avgScore + 4),
+          communicationScore: Math.max(60, avgScore - 3),
+          integrityScore: Math.max(50, 100 - (reviewMarkers.length * 8)),
+          verdict: avgScore >= 80 ? 'hire' : avgScore >= 65 ? 'follow_up' : 'pass',
+          triageStatus: 'pending',
+          reviewMarkers,
+          transcript: finalTranscriptList,
+          rubricEvidence: finalRubric,
+          studyTopics: finalStudy,
+          projectClaims: projectClaims.length > 0 ? projectClaims : ['Backend Architecture', 'Concurrency & Latency Optimization'],
+          jobDescription: jobDescription || 'Senior Fullstack Engineer'
+        });
       }
     } catch (e) {
       console.error('Failed to generate evidence scores:', e);
+    }
+  };
+
+  const handleSkipQuestion = async () => {
+    if (isProcessing || isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/athena/adaptive-question', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          previousQuestion: currentQuestion,
+          previousAnswer: 'Question skipped by candidate for an alternative focus area.',
+          jobDescription,
+          resumeText,
+          verificationTopics,
+          competencyState,
+          questionIndex: questionIndex + 1,
+          askedQuestions: [...askedQuestions, currentQuestion],
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.nextQuestion) {
+          setCurrentQuestion(data.nextQuestion);
+          setAskedQuestions(prev => [...prev, data.nextQuestion]);
+          setQuestionIndex(prev => prev + 1);
+          if (data.isCodingQuestion !== undefined) setIsCodingQuestion(data.isCodingQuestion);
+          if (data.updatedCompetencyState) setCompetencyState(data.updatedCompetencyState);
+          
+          setTranscript(prev => [
+            ...prev,
+            {
+              id: `turn-interviewer-${Date.now()}`,
+              speaker: 'interviewer',
+              timestamp: formatTimestamp(sessionElapsedSeconds),
+              elapsedSeconds: sessionElapsedSeconds,
+              text: data.nextQuestion,
+              competency: data.competency || competencyState.currentCompetency,
+              questionIndex: questionIndex + 1,
+            }
+          ]);
+        }
+      }
+    } catch (e) {
+      console.warn('Skip question error:', e);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -742,6 +826,7 @@ export default function InterviewRoom() {
       console.warn('Network notice, using fallback starter question:', e);
     } finally {
       setCurrentQuestion(firstQ);
+      setAskedQuestions([firstQ]);
       setQuestionIndex(1);
       setIsCodingQuestion(isCoding);
       setIsSetupMode(false);
@@ -795,7 +880,7 @@ export default function InterviewRoom() {
                   <ShieldAlert className="w-8 h-8" />
                 </div>
                 <h2 className="text-2xl font-black text-white mb-1.5 tracking-tight">
-                  Athena Contextual Integrity Protocol
+                  HireRank Contextual Integrity Protocol
                 </h2>
                 <p className="text-slate-400 text-xs mb-6 font-medium">
                   HireRank uses real-time computer vision integrity tracking to verify your session for hiring managers.
@@ -847,7 +932,7 @@ export default function InterviewRoom() {
                     disabled={isGenerating}
                     className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-indigo-600/30 flex justify-center items-center"
                   >
-                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Start Athena Simulation &rarr;</span>}
+                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Start HireRank Simulation &rarr;</span>}
                   </button>
                 </div>
               </motion.div>
@@ -869,7 +954,7 @@ export default function InterviewRoom() {
               Configure Interview Context
             </h2>
             <p className="text-slate-400 text-sm max-w-xl mx-auto">
-              Provide your target Job Description and optional Resume PDF. Athena will extract project claims to anchor the technical verification.
+              Provide your target Job Description and optional Resume PDF. HireRank will extract project claims to anchor the technical verification.
             </p>
           </div>
 
@@ -955,7 +1040,7 @@ export default function InterviewRoom() {
                       </div>
                       <p className="text-slate-300 font-semibold text-sm mb-1">Click to Upload Resume</p>
                       <p className="text-xs text-slate-500 mb-4 max-w-xs">
-                        Athena cross-references your claims to build 3 targeted verification topics.
+                        HireRank cross-references your claims to build 3 targeted verification topics.
                       </p>
                       <label className="cursor-pointer bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
                         Select Resume PDF
@@ -1045,7 +1130,7 @@ export default function InterviewRoom() {
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-sm font-bold text-white">HireRank Athena</span>
+              <span className="text-sm font-bold text-white">HireRank</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 {competencyState.currentCompetency}
               </span>
@@ -1181,6 +1266,17 @@ export default function InterviewRoom() {
 
             <button
               type="button"
+              onClick={handleSkipQuestion}
+              disabled={isRecording || isProcessing || isGenerating}
+              className="px-4 py-4 rounded-2xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center"
+              title="Skip to next adaptive question"
+            >
+              <SkipForward className="w-4 h-4 mr-1.5 text-indigo-400" />
+              <span>Skip</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsFinished(true)}
               disabled={isRecording || isProcessing}
               className="px-4 py-4 rounded-2xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center"
@@ -1192,14 +1288,14 @@ export default function InterviewRoom() {
           </div>
         </div>
 
-        {/* RIGHT SIDE: Question Cards + Monaco Editor Workspace + Athena Skeletons (7 cols) */}
+        {/* RIGHT SIDE: Question Cards + Monaco Editor Workspace + HireRank Skeletons (7 cols) */}
         <div className="lg:col-span-7 flex flex-col space-y-4">
           
           {/* Question Card or Loading Skeleton */}
           {isProcessing || isGenerating ? (
             <AthenaLoadingSkeleton
               type="question"
-              title="Athena Adaptive Engine"
+              title="HireRank Adaptive Engine"
               subtitle="Processing your explanation & synthesising next competency probe"
             />
           ) : (
@@ -1232,7 +1328,7 @@ export default function InterviewRoom() {
               <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
                 {hintText ? (
                   <p className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 flex-1">
-                    <span className="font-bold block text-amber-400">Athena Hint (-20% score cap):</span>
+                    <span className="font-bold block text-amber-400">HireRank Hint (-20% score cap):</span>
                     {hintText}
                   </p>
                 ) : (

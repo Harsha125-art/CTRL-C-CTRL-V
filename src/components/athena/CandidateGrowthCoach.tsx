@@ -39,7 +39,7 @@ export default function CandidateGrowthCoach({
               Personalized Engineering Growth Plan
             </h2>
             <p className="text-slate-400 text-sm max-w-2xl font-medium">
-              Interviews are learning milestones. Based on your live problem-solving and architectural choices, Athena curated these targeted study topics to fast-track your seniority.
+              Interviews are learning milestones. Based on your live problem-solving and architectural choices, HireRank curated these targeted study topics to fast-track your seniority.
             </p>
           </div>
 

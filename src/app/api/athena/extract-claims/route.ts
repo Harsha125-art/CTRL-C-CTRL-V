@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Both resume text and job description are required." }, { status: 400 });
     }
 
-    const prompt = `You are HireRank's Project Athena Resume-to-Reality Engine.
+    const prompt = `You are HireRank's Resume-to-Reality Engine.
 Analyze the following Job Description and Candidate's Resume.
 Extract the key project claims, technical competencies, and architectural choices mentioned in the resume that directly intersect with the job requirements.
 Then formulate EXACTLY THREE (3) realistic "Verification Topics" that the candidate will review and that will form the spine of the technical interview.

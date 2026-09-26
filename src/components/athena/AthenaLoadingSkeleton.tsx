@@ -8,7 +8,7 @@ interface SkeletonProps {
 
 export default function AthenaLoadingSkeleton({
   type = 'question',
-  title = 'Athena AI Processing...',
+  title = 'HireRank AI Processing...',
   subtitle = 'Analyzing semantic context & generating next prompt'
 }: SkeletonProps) {
   if (type === 'question') {

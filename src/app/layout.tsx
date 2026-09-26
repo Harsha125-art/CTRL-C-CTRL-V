@@ -9,7 +9,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "HireRank &mdash; Project Athena | AI Technical Interview Platform",
+  title: "HireRank | AI Technical Interview Platform & Proctoring Verification",
   description: "Autonomous technical interview simulator with computer vision integrity tracking, adaptive questioning, and evidence-first scoring.",
 };
 

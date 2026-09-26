@@ -20,18 +20,19 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const {
-      previousQuestion,
-      previousAnswer,
+      previousQuestion = '',
+      previousAnswer = '',
       codeContent,
       jobDescription = '',
       resumeText = '',
+      askedQuestions = [] as string[],
       verificationTopics = [] as VerificationTopic[],
       competencyState = {
         currentCompetency: DEFAULT_COMPETENCIES[0],
         followUpCount: 0,
         totalCompetenciesCompleted: 0
       } as AthenaCompetencyState,
-      questionIndex = 0
+      questionIndex = 1
     } = body;
 
     let { currentCompetency, followUpCount, totalCompetenciesCompleted } = competencyState;
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
     let shouldRotateCompetency = false;
     let nextFollowUpCount = followUpCount;
 
-    // Backend limit: Max 2 follow-ups per competency
+    // Rotate after 2 follow-ups
     if (followUpCount >= 2) {
       shouldRotateCompetency = true;
       totalCompetenciesCompleted += 1;
@@ -50,46 +51,46 @@ export async function POST(req: NextRequest) {
       nextFollowUpCount = followUpCount + 1;
     }
 
-    // Determine relevant verification topic if available
-    const activeTopic = verificationTopics.find((t: VerificationTopic) =>
-      t.competency?.toLowerCase().includes(currentCompetency.toLowerCase()) ||
-      currentCompetency.toLowerCase().includes(t.competency?.toLowerCase())
-    ) || verificationTopics[totalCompetenciesCompleted % (verificationTopics.length || 1)];
+    // Force coding question at Question 3 or 4
+    const isCodingStage = questionIndex === 3 || currentCompetency.includes('Algorithmic');
 
-    const prompt = `You are HireRank's Project Athena Adaptive Question Engine.
-Your goal is to conduct an authentic, responsive technical interview.
+    const allAsked = [previousQuestion, ...askedQuestions].filter(Boolean);
 
-CURRENT INTERVIEW STATUS:
-- Target Competency: "${currentCompetency}"
-- Follow-up Depth on this Competency: ${nextFollowUpCount} of 2 max follow-ups
-- Is Fresh Competency Transition: ${shouldRotateCompetency}
-- Active Resume Verification Topic: ${activeTopic ? `"${activeTopic.title}" (Source: ${activeTopic.sourceClaim})` : 'General JD requirement'}
+    // Extract any mentioned keywords from previous answer
+    const cleanedAnswer = previousAnswer && previousAnswer !== 'No audio recorded.' ? previousAnswer : '';
 
-CONTEXT:
-Job Description: """${jobDescription.slice(0, 1500)}"""
-Candidate's Previous Answer: """${previousAnswer || 'Starting initial question.'}"""
-${codeContent ? `Candidate's Submitted Code: """${codeContent.slice(0, 800)}"""` : ''}
-Previous Question: """${previousQuestion || 'N/A'}"""
+    const prompt = `You are HireRank's Adaptive Question Engine.
+You must generate the NEXT technical interview question based on the candidate's actual words, their demonstrated skills, and the Job Description.
 
-RULES:
-1. If "Is Fresh Competency Transition" is TRUE (or starting first question):
-   - Transition cleanly to the new competency ("${currentCompetency}").
-   - Frame a new problem or architecture scenario grounded in the candidate's resume claims or the job requirements.
-2. If "Is Fresh Competency Transition" is FALSE (Follow-up 1 or 2):
-   - Actively BRANCH from the candidate's actual words in their previous answer!
-   - If they mentioned a specific technology, design decision, edge case, or trade-off, challenge it or drill into the failure modes.
-   - If their answer was vague or missed a critical concept, ask a targeted follow-up question to probe for deep comprehension.
-3. If competency is "Algorithmic Problem Solving & Code Execution", set "isCodingQuestion": true.
+CRITICAL RULES:
+1. NEVER REPEAT: You are FORBIDDEN from asking or repeating any question similar to these previous questions:
+${allAsked.map((q, i) => `   ${i + 1}. "${q}"`).join('\n')}
+
+2. ADAPTIVE BRANCHING:
+   - If the candidate mentioned specific tools or patterns (e.g. Docker, Redis, Postgres, React, Microservices, Kafka, WebSockets, Sharding) in their answer: """${cleanedAnswer}""", DIRECTLY challenge or drill into how they implemented it or how they handle failure modes in that choice!
+   - If their previous answer was brief or vague, ask them to justify the database or consistency trade-offs.
+   - For Question ${questionIndex + 1} of 5:
+     ${questionIndex === 0 ? '- Ask an icebreaker about a specific project or core technology listed on their resume.' : ''}
+     ${questionIndex === 1 ? '- Drill deep into data models, latency bottlenecks, and state management in their architecture.' : ''}
+     ${questionIndex === 2 ? '- Coding & Algorithmic Task: Present a concrete coding scenario to implement in Python or JavaScript.' : ''}
+     ${questionIndex === 3 ? '- Production Incident / Scalability: Ask how they handle network drops, concurrency lock contention, or traffic spikes.' : ''}
+     ${questionIndex >= 4 ? '- High-level architectural trade-offs, security, and cost optimization.' : ''}
+
+Job Description:
+"""${jobDescription.slice(0, 1200)}"""
+
+Candidate Resume Details:
+"""${resumeText.slice(0, 1500)}"""
 
 Return ONLY a valid JSON object:
 {
-  "nextQuestion": "The clear, spoken-style interview question for the candidate.",
-  "isCodingQuestion": boolean,
-  "difficulty": "easy" | "medium" | "hard",
+  "nextQuestion": "The unique, concrete question for the candidate.",
+  "isCodingQuestion": ${isCodingStage ? 'true' : 'false'},
+  "difficulty": "medium",
   "competency": "${currentCompetency}",
   "followUpCount": ${nextFollowUpCount},
   "isNewCompetency": ${shouldRotateCompetency},
-  "rationale": "One brief sentence explaining why this question was chosen based on the candidate's previous response and competency limits."
+  "rationale": "Why this specific question was selected based on candidate's answer."
 }`;
 
     let parsed: any = null;
@@ -98,50 +99,74 @@ Return ONLY a valid JSON object:
       try {
         const chatCompletion = await createGroqChatCompletion({
           messages: [{ role: 'user', content: prompt }],
-          temperature: 0.5,
+          temperature: 0.6,
           response_format: { type: 'json_object' },
         });
 
         const content = chatCompletion.choices[0]?.message?.content || '{}';
         parsed = JSON.parse(content);
+
+        // Sanity check: Ensure generated question is not identical to previous questions
+        if (parsed?.nextQuestion && allAsked.some(prev => prev.toLowerCase().includes(parsed.nextQuestion.toLowerCase().slice(0, 40)))) {
+          parsed = null; // force fresh question
+        }
       } catch (aiErr) {
-        console.warn("Groq adaptive question generation failed, falling back to heuristic engine:", aiErr);
+        console.warn("Groq adaptive question generation failed, using stage-specific fallback:", aiErr);
       }
     }
 
-    if (parsed && parsed.nextQuestion) {
-      return NextResponse.json({
-        ...parsed,
-        updatedCompetencyState: {
-          currentCompetency,
-          followUpCount: nextFollowUpCount,
-          totalCompetenciesCompleted,
-          activeTopicId: activeTopic?.id
+    // Dynamic stage-aware fallback questions that NEVER repeat
+    if (!parsed || !parsed.nextQuestion) {
+      const stageFallbackMatrix: { [stage: number]: { question: string; isCoding: boolean; comp: string } } = {
+        1: {
+          question: "Can you dive into the data layer of that project? How did you structure your schema and indexing to ensure sub-millisecond query response times?",
+          isCoding: false,
+          comp: "Database Design & State"
+        },
+        2: {
+          question: "When traffic spikes 10x or connections pool out, how does your system handle backpressure and rate limiting? What telemetry alarms notify your team?",
+          isCoding: false,
+          comp: "Production Resilience"
+        },
+        3: {
+          question: "Let's test implementation skills in the code editor: Write a function to detect cycle dependencies in a directed acyclic graph (DAG) representing service tasks.",
+          isCoding: true,
+          comp: "Algorithmic Problem Solving & Code Execution"
+        },
+        4: {
+          question: "Suppose a production database replica experiences a 30-second network partition during peak financial transactions. How do you reconcile conflicting writes without data corruption?",
+          isCoding: false,
+          comp: "Distributed Systems & Consistency"
+        },
+        5: {
+          question: "Looking back at the end-to-end architecture, what is the single largest technical debt or single point of failure you would re-architect if given unlimited budget?",
+          isCoding: false,
+          comp: "System Architecture & Design"
         }
-      });
-    } else {
-      // Deterministic fallback if running without Groq key
-      const fallbackIsCoding = currentCompetency.includes('Coding') || currentCompetency.includes('Algorithmic');
-      return NextResponse.json({
-        nextQuestion: shouldRotateCompetency
-          ? `Let's shift focus to ${currentCompetency}. In your previous projects, how did you architect systems for high availability under peak load?`
-          : `You mentioned that in your response. How would that approach scale if your traffic increased 10x or if the network partitioned?`,
-        isCodingQuestion: fallbackIsCoding,
-        difficulty: 'medium',
-        competency: currentCompetency,
+      };
+
+      const fallbackEntry = stageFallbackMatrix[Math.min(questionIndex, 5)] || stageFallbackMatrix[2];
+
+      parsed = {
+        nextQuestion: fallbackEntry.question,
+        isCodingQuestion: fallbackEntry.isCoding,
+        difficulty: "medium",
+        competency: fallbackEntry.comp,
         followUpCount: nextFollowUpCount,
-        isNewCompetency: shouldRotateCompetency,
-        rationale: shouldRotateCompetency
-          ? 'Reached 2 follow-ups ceiling on previous competency; rotated to next topic.'
-          : `Adaptive follow-up ${nextFollowUpCount}/2 probing candidate's design rationale.`,
-        updatedCompetencyState: {
-          currentCompetency,
-          followUpCount: nextFollowUpCount,
-          totalCompetenciesCompleted,
-          activeTopicId: activeTopic?.id
-        }
-      });
+        isNewCompetency: true,
+        rationale: `Stage ${questionIndex} progressive skill verification.`
+      };
     }
+
+    return NextResponse.json({
+      ...parsed,
+      updatedCompetencyState: {
+        currentCompetency: parsed.competency || currentCompetency,
+        followUpCount: nextFollowUpCount,
+        totalCompetenciesCompleted,
+        activeTopicId: verificationTopics[0]?.id
+      }
+    });
   } catch (error: any) {
     console.error("Adaptive question error:", error);
     return NextResponse.json(

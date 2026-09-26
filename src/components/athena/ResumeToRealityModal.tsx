@@ -44,7 +44,7 @@ export default function ResumeToRealityModal({
                 <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   Resume-to-Reality
                 </span>
-                <span className="text-xs text-slate-400 font-medium">Athena Verification Engine</span>
+                <span className="text-xs text-slate-400 font-medium">HireRank Verification Engine</span>
               </div>
               <h2 className="text-2xl font-black text-white tracking-tight mt-0.5">
                 Review Your 3 Verification Topics
@@ -52,7 +52,7 @@ export default function ResumeToRealityModal({
             </div>
           </div>
           <p className="text-xs text-slate-400 max-w-xs text-left sm:text-right">
-            Athena cross-referenced your resume against the Job Description to curate these core interview probes.
+            HireRank cross-referenced your resume against the Job Description to curate these core interview probes.
           </p>
         </div>
 
@@ -153,7 +153,7 @@ export default function ResumeToRealityModal({
             disabled={isLoading}
             className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_30px_rgba(79,70,229,0.4)] flex items-center group"
           >
-            <span>Confirm & Enter Athena Chamber</span>
+            <span>Confirm & Enter Interview Chamber</span>
             <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       .map((t: TranscriptTurn) => `[${t.timestamp}] ${t.speaker.toUpperCase()}: ${t.text}${t.codeSnippet ? `\n[Code]:\n${t.codeSnippet}` : ''}`)
       .join('\n\n');
 
-    const prompt = `You are HireRank's Project Athena Evidence-First Evaluator and Growth Coach.
+    const prompt = `You are HireRank's Evidence-First Evaluator and Growth Coach.
 You evaluate technical candidates strictly using verifiable evidence.
 
 MANDATORY RULES:

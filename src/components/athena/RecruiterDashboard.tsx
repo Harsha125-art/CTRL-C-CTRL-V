@@ -69,7 +69,7 @@ export default function RecruiterDashboard({
             <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-black tracking-widest uppercase border border-indigo-500/30">
               HireRank Recruiter Triage
             </span>
-            <span className="text-xs text-slate-400 font-medium">Athena Audit Dossier</span>
+            <span className="text-xs text-slate-400 font-medium">Candidate Audit Dossier</span>
           </div>
           <h2 className="text-3xl font-black text-white tracking-tight">{candidateName} &mdash; {jobTitle}</h2>
           <p className="text-sm text-slate-400">
@@ -244,7 +244,7 @@ export default function RecruiterDashboard({
                                 : 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20'
                             }`}
                           >
-                            {isCandidate ? 'Candidate' : 'Interviewer (Athena)'}
+                            {isCandidate ? 'Candidate' : 'Interviewer (HireRank AI)'}
                           </span>
                           {turn.competency && (
                             <span className="text-[10px] text-slate-400 font-medium">

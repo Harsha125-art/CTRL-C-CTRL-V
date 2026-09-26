@@ -138,7 +138,7 @@ export default function Dashboard({
             <Award className="w-4 h-4" />
           </div>
           <span className="text-xs font-bold text-slate-200">
-            HireRank &bull; Project Athena Portal
+            HireRank &bull; Verified Evaluation Hub
           </span>
         </div>
 
