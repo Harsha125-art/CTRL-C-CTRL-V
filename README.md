@@ -6,7 +6,7 @@
 
   <br/><br/>
 
-  <h1>🛡️ HireRank &mdash; Project Athena</h1>
+  <h1>HireRank &mdash; Project Athena</h1>
   <p><b>Next-Generation Autonomous Technical Interview Platform with Verifiable CV Integrity & Evidence-First Scoring.</b></p>
 
   <p>
@@ -22,26 +22,26 @@
 
 <br/>
 
-## 📚 Table of Contents
+## Table of Contents
 
-1. [Overview](#-overview)
-2. [Core Pillars](#️-hirerank-core-pillars)
-3. [End-to-End Flowchart](#-end-to-end-flowchart)
-4. [System Architecture](#-system-architecture--technology-stack)
-5. [Project Structure](#-project-structure)
-6. [Data Model](#-data-model-srctypesathenats)
-7. [API Reference](#-api-reference)
-8. [Contextual Integrity Timeline (CV Engine)](#-contextual-integrity-timeline-cv-engine)
-9. [Getting Started](#-getting-started)
-10. [Environment Variables](#-environment-variables)
-11. [Usage Walkthrough](#-usage-walkthrough)
-12. [Design Philosophy](#-design-philosophy)
-13. [Roadmap Ideas](#-roadmap-ideas)
-14. [Disclaimer](#-disclaimer)
+1. [Overview](#overview)
+2. [Core Pillars](#hirerank-core-pillars)
+3. [End-to-End Flowchart](#end-to-end-flowchart)
+4. [System Architecture](#system-architecture--technology-stack)
+5. [Project Structure](#project-structure)
+6. [Data Model](#data-model-srctypesathenats)
+7. [API Reference](#api-reference)
+8. [Contextual Integrity Timeline (CV Engine)](#contextual-integrity-timeline-cv-engine)
+9. [Getting Started](#getting-started)
+10. [Environment Variables](#environment-variables)
+11. [Usage Walkthrough](#usage-walkthrough)
+12. [Design Philosophy](#design-philosophy)
+13. [Roadmap Ideas](#roadmap-ideas)
+14. [Disclaimer](#disclaimer)
 
 ---
 
-## 🌟 Overview
+## Overview
 
 **HireRank** is an enterprise-grade AI technical interview platform designed to elevate talent assessment through verifiable behavioral integrity and deep semantic evaluation. It combines **Edge-Computed Computer Vision** with **Cloud LLM Intelligence (Groq + Llama 3.3 70B)** to create a realistic, adaptive, and evidence-grounded interview chamber.
 
@@ -54,7 +54,7 @@ The application is a single Next.js 14 (App Router) project that serves **two ro
 
 ---
 
-## 🏛️ HireRank Core Pillars
+## HireRank Core Pillars
 
 ### 1. Resume-to-Reality
 Ingests a candidate's resume (PDF or pasted text) alongside the target Job Description to automatically extract key technical claims and formulate **3 Candidate-Reviewable Verification Topics** that anchor the interview questioning.
@@ -74,120 +74,26 @@ Every rubric score returned by the LLM is backed by an **exact verbatim quote** 
 
 ---
 
-## 🧭 End-to-End Flowchart
+## End-to-End Flowchart
 
 The diagram below traces the full lifecycle of a candidate through HireRank: authentication, resume ingestion, the adaptive interview loop, real-time integrity monitoring, and the post-interview scoring/triage split between the two portals.
 
 ```mermaid
 flowchart TD
-    Start([Visitor opens HireRank]) --> Auth{Signed in?}
-    Auth -- "No" --> Gate[SignInGate: choose Recruiter or Candidate role]
-    Gate --> AuthModal[Mock Auth: sign in / create identity]
-    AuthModal --> RoleCheck{Selected role}
-    Auth -- "Yes" --> RoleCheck
-
-    RoleCheck -- Recruiter --> RecPortal[Recruiter Portal]
-    RoleCheck -- Candidate --> CandPortal[Candidate Portal]
-
-    %% ===================== RECRUITER SIDE =====================
-    subgraph RECRUITER["Recruiter Workflow"]
-        RecPortal --> BulkUpload["Upload multiple resumes (PDF)"]
-        BulkUpload --> ParseAPI["/api/parse-resume\n(pdf2json text extraction)"]
-        ParseAPI --> ExtractAPI["/api/extract-candidate-info\n(Groq LLM: name, email, skills)"]
-        ExtractAPI --> Queue["Candidate Queue built\n(status: ready / error)"]
-        Queue --> SendEmail["/api/send-invitation-email\nSend single or bulk invites"]
-        SendEmail --> InviteStore[("invitationStore\nlocalStorage")]
-        RecPortal --> Dashboard["Recruiter Triage Dashboard"]
-        Dashboard --> Filter["Filter by status:\nall / hire / next_round / hold"]
-        Dashboard --> Radar["Competency Radar + Score Cards"]
-        Dashboard --> Timeline["Contextual Integrity Timeline\n(clickable Review Markers)"]
-        Timeline --> JumpTranscript["Jump to exact transcript turn"]
-        Dashboard --> Decision{"Triage decision"}
-        Decision -->|Hire| Hired[("Mark Hire")]
-        Decision -->|Next Round| NextRound[("Mark Next Round")]
-        Decision -->|Hold| Hold[("Mark Hold")]
-    end
-
-    InviteStore -. "invite token / link" .-> CandPortal
-
-    %% ===================== CANDIDATE SIDE =====================
-    subgraph CANDIDATE["Candidate Workflow"]
-        CandPortal --> Tabs{Choose tab}
-        Tabs -- Invitations --> InviteList["View pending invitations"]
-        InviteList --> StartInvite["Start invited interview"]
-        Tabs -- "Practice Chamber" --> CustomPractice["Start self-paced practice"]
-        Tabs -- "My Interviews" --> PastResults["View past scores & feedback"]
-
-        StartInvite --> Setup
-        CustomPractice --> Setup
-
-        Setup["Setup Mode:\nPaste / Upload resume + Job Description"]
-        Setup --> UploadCheck{Resume source}
-        UploadCheck -- "Upload PDF" --> ParseAPI2["/api/parse-resume"]
-        UploadCheck -- "Paste text" --> ClaimsExtract
-        ParseAPI2 --> ClaimsExtract["/api/athena/extract-claims\nExtract technical claims"]
-        ClaimsExtract --> VerifyTopics["Resume-to-Reality Modal:\n3 Verification Topics generated"]
-        VerifyTopics --> ConsentGate["Candidate confirms & agrees to rules"]
-        ConsentGate --> InitQuestion["/api/athena/adaptive-question\nGenerate opening question"]
-
-        InitQuestion --> Interview[["Live Interview Room"]]
-    end
-
-    %% ===================== LIVE INTERVIEW LOOP =====================
-    subgraph LOOP["Live Interview Chamber (per turn)"]
-        Interview --> CamOn["Webcam + MediaPipe FaceMesh\ninitializes (client-side only)"]
-        CamOn --> Frame["Analyze video frame every tick"]
-        Frame --> FaceCheck{Face count}
-        FaceCheck -- "0 faces (sustained)" --> MarkerMissing["Log Review Marker:\nface_missing"]
-        FaceCheck -- ">1 faces (sustained)" --> MarkerMulti["Log Review Marker:\nmultiple_faces"]
-        FaceCheck -- "1 face" --> YawScore["Compute yaw-based\nconfidence score"]
-        MarkerMissing --> Timeline
-        MarkerMulti --> Timeline
-        YawScore --> ConfidenceUI["Update live confidence meter"]
-
-        Interview --> TabWatch["Browser visibility listener"]
-        TabWatch -- "Tab backgrounded" --> MarkerTab["Log Review Marker:\ntab_switch"]
-        MarkerTab --> Timeline
-
-        Interview --> AnswerMode{"Answer type"}
-        AnswerMode -- "Speak" --> SpeechAPI["Web Speech API\nLive captions"]
-        SpeechAPI --> AudioBlob["Record audio segment"]
-        AudioBlob --> TranscribeAPI["/api/transcribe\nGroq whisper-large-v3"]
-        AnswerMode -- "Type answer" --> ManualText["Manual text submit"]
-        AnswerMode -- "Code" --> MonacoEditor["Monaco Editor\n(Python / JS / TS)"]
-
-        TranscribeAPI --> EvaluateAPI
-        ManualText --> EvaluateAPI
-        MonacoEditor --> EvaluateAPI
-        EvaluateAPI["/api/evaluate\nScore this turn + reasoning"]
-        EvaluateAPI --> FollowUpCheck{"Follow-ups used\nfor this competency < 2?"}
-        FollowUpCheck -- "Yes" --> AdaptiveAPI["/api/athena/adaptive-question\nGenerate follow-up"]
-        FollowUpCheck -- "No" --> NextCompetency["Rotate to next competency\n/ next Verification Topic"]
-        AdaptiveAPI --> Interview
-        NextCompetency --> HintCheck{"Candidate requests hint?"}
-        HintCheck -- Yes --> HintAPI["/api/get-hint\nContextual nudge, no answer leak"]
-        HintAPI --> Interview
-        HintCheck -- No --> MoreTopics{"More Verification\nTopics remaining?"}
-        MoreTopics -- Yes --> Interview
-        MoreTopics -- No --> Finish["Candidate ends interview"]
-    end
-
-    Finish --> EvidenceScore["/api/athena/evidence-score\nFinal rubric scoring:\nverbatim quote + timestamp per criterion"]
-    EvidenceScore --> BuildSession["Assemble CandidateSessionRecord:\nscores, transcript, review markers,\nrubric evidence, study topics"]
-    BuildSession --> SaveSession[("candidateStore\nlocalStorage")]
-    SaveSession --> UpdateInvite["updateInvitationStatus\n(if linked to an invite)"]
-    UpdateInvite --> Split{"Who views results?"}
-
-    Split -- Candidate --> GrowthCoach["Candidate Growth Coach:\nstudy topics + roadmap"]
-    Split -- Recruiter --> Dashboard
-
-    GrowthCoach --> End1([Candidate session complete])
-    Decision --> End2([Recruiter triage recorded])
+    A[Sign in and choose a role] --> B{Recruiter or Candidate}
+    B --> C[Recruiter uploads resumes and sends an invite]
+    C --> D[Candidate opens the interview]
+    B --> D
+    D --> E[Candidate adds resume and job description]
+    E --> F[Live interview: questions, answers, webcam checks]
+    F --> G[Final scoring with quotes and timestamps]
+    G --> H[Candidate sees growth report]
+    G --> I[Recruiter reviews and makes a hiring decision]
 ```
 
 ---
 
-## 🏗️ System Architecture & Technology Stack
+## System Architecture & Technology Stack
 
 | Layer | Technology | Purpose |
 |---|---|---|
@@ -206,7 +112,7 @@ flowchart TD
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 CTRL-C-CTRL-V-main/
@@ -269,7 +175,7 @@ CTRL-C-CTRL-V-main/
 
 ---
 
-## 🧬 Data Model (`src/types/athena.ts`)
+## Data Model (`src/types/athena.ts`)
 
 The entire interview is described by a small set of well-typed records:
 
@@ -283,7 +189,7 @@ The entire interview is described by a small set of well-typed records:
 
 ---
 
-## 🔌 API Reference
+## API Reference
 
 All routes live under `src/app/api/` and are called from the client via `fetch`. Every LLM-backed route uses the Groq SDK client from `src/lib/groq.ts`.
 
@@ -305,21 +211,21 @@ All routes live under `src/app/api/` and are called from the client via `fetch`.
 
 ---
 
-## 🕵️ Contextual Integrity Timeline (CV Engine)
+## Contextual Integrity Timeline (CV Engine)
 
 Implemented in `src/lib/cvIntegrity.ts` via the `CvIntegrityTracker` class, this engine runs **entirely client-side** against MediaPipe FaceMesh landmarks &mdash; no frame or video is ever sent to a server.
 
-- **Zero faces detected** for a sustained run of frames → confidence drops to `0`, a debounced `face_missing` marker (severity `medium`) is logged.
-- **More than one face detected** for a sustained run of frames → confidence drops to `30`, a debounced `multiple_faces` marker (severity `high`) is logged.
-- **Exactly one face** → a yaw ratio is computed from nose/eye landmark distances to estimate how centered/attentive the candidate is, producing a live confidence score between `10` and `100`.
-- **Tab/window backgrounded** → the page's `visibilitychange` listener fires `createTabSwitchMarker`, logging a `tab_switch` marker (severity `medium`).
+- **Zero faces detected** for a sustained run of frames &mdash; confidence drops to `0`, a debounced `face_missing` marker (severity `medium`) is logged.
+- **More than one face detected** for a sustained run of frames &mdash; confidence drops to `30`, a debounced `multiple_faces` marker (severity `high`) is logged.
+- **Exactly one face** &mdash; a yaw ratio is computed from nose/eye landmark distances to estimate how centered/attentive the candidate is, producing a live confidence score between `10` and `100`.
+- **Tab/window backgrounded** &mdash; the page's `visibilitychange` listener fires `createTabSwitchMarker`, logging a `tab_switch` marker (severity `medium`).
 - All markers are **debounced** (minimum 8 seconds between similar markers) to avoid spamming the timeline, and every marker carries a precise `elapsedSeconds` / `MM:SS` timestamp so recruiters can jump straight to that moment in the transcript.
 
 Crucially, **no marker auto-disqualifies a candidate** &mdash; they are purely advisory signals surfaced on the Recruiter Dashboard's Contextual Integrity Timeline for a human to interpret in context.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 18+ and npm
@@ -361,24 +267,24 @@ npm run lint    # Run ESLint
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 | Variable | Required | Description |
 |---|---|---|
-| `GROQ_API_KEY` | ✅ Yes | Authenticates all Groq SDK calls (`llama-3.3-70b-versatile` for reasoning/scoring, `whisper-large-v3` for transcription). Without it, question generation, evaluation, and transcription routes will fail. |
-| `UPSTASH_REDIS_REST_URL` | ⭕ Optional | Enables Upstash-backed rate limiting on API routes. |
-| `UPSTASH_REDIS_REST_TOKEN` | ⭕ Optional | Paired token for the Upstash REST client. |
+| `GROQ_API_KEY` | Required | Authenticates all Groq SDK calls (`llama-3.3-70b-versatile` for reasoning/scoring, `whisper-large-v3` for transcription). Without it, question generation, evaluation, and transcription routes will fail. |
+| `UPSTASH_REDIS_REST_URL` | Optional | Enables Upstash-backed rate limiting on API routes. |
+| `UPSTASH_REDIS_REST_TOKEN` | Optional | Paired token for the Upstash REST client. |
 
 ---
 
-## 🧑‍💻 Usage Walkthrough
+## Usage Walkthrough
 
 **As a Candidate:**
 1. Open the app and choose the **Candidate** role on the sign-in gate.
 2. From the **Invitations** tab, accept an interview invite &mdash; or jump into the **Practice Chamber** for a self-paced session.
 3. Paste or upload your resume and the target Job Description.
 4. Review the **3 auto-generated Verification Topics** in the Resume-to-Reality modal and confirm to begin.
-5. Answer questions by speaking (live-captioned and transcribed), typing, or writing code in the embedded Monaco editor &mdash; the adaptive engine will follow up up to twice per competency before rotating topics.
+5. Answer questions by speaking (live-captioned and transcribed), typing, or writing code in the embedded Monaco editor &mdash; the adaptive engine will follow up, up to twice per competency, before rotating to the next topic.
 6. End the interview to receive an **Evidence-First** score breakdown and a personalized **Growth Coach** report under **My Interviews**.
 
 **As a Recruiter:**
@@ -390,7 +296,7 @@ npm run lint    # Run ESLint
 
 ---
 
-## 🎨 Design Philosophy
+## Design Philosophy
 
 - **Dignity over disqualification** &mdash; integrity signals are logged for human review, never used to silently fail a candidate.
 - **Evidence over vibes** &mdash; every score is traceable to an exact quote and timestamp, reducing evaluator bias and making feedback defensible.
@@ -399,7 +305,7 @@ npm run lint    # Run ESLint
 
 ---
 
-## 🛣️ Roadmap Ideas
+## Roadmap Ideas
 
 - Swap `localStorage` stores for a persistent database (Postgres/Redis) and real authentication.
 - Add real email delivery (e.g., Resend/SendGrid) behind `send-invitation-email`.
@@ -409,6 +315,6 @@ npm run lint    # Run ESLint
 
 ---
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 This repository was built as a hackathon/demo project ("Project Athena"). It uses browser `localStorage` for persistence and a mock authentication flow &mdash; it is **not production-hardened** for handling real candidate PII, video, or audio data. Before any real-world deployment, add a proper database, authenticated sessions, encrypted storage, and a data-retention/consent policy appropriate for biometric and recorded-interview data.
