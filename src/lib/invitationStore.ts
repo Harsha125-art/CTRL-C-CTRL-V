@@ -100,10 +100,10 @@ export function getCandidateInvitations(email?: string): InterviewInvitation[] {
   const all = getStoredInvitations();
   if (!email) return all;
   const cleanEmail = email.toLowerCase().trim();
-  const matched = all.filter(i => i.candidateEmail.toLowerCase().trim() === cleanEmail);
-  if (matched.length > 0) return matched;
-  // Fallback to all invitations if demo or testing account
-  return all;
+  // Return invitations sent to this candidate or all if demo candidate
+  return all.filter(
+    i => i.candidateEmail.toLowerCase().trim() === cleanEmail || cleanEmail.includes('alex')
+  );
 }
 
 export function updateInvitationStatus(
@@ -134,3 +134,4 @@ export function deleteInvitation(id: string): void {
     console.error('Failed to delete invitation:', e);
   }
 }
+
