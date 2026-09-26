@@ -6,7 +6,7 @@
 
   <br/><br/>
 
-  <h1> HireRank &mdash; Project Athena</h1>
+  <h1>🛡️ HireRank &mdash; Project Athena</h1>
   <p><b>Next-Generation Autonomous Technical Interview Platform with Verifiable CV Integrity & Evidence-First Scoring.</b></p>
 
   <p>
@@ -22,7 +22,7 @@
 
 <br/>
 
-## Table of Contents
+## 📚 Table of Contents
 
 1. [Overview](#-overview)
 2. [Core Pillars](#️-hirerank-core-pillars)
@@ -41,7 +41,7 @@
 
 ---
 
-##  Overview
+## 🌟 Overview
 
 **HireRank** is an enterprise-grade AI technical interview platform designed to elevate talent assessment through verifiable behavioral integrity and deep semantic evaluation. It combines **Edge-Computed Computer Vision** with **Cloud LLM Intelligence (Groq + Llama 3.3 70B)** to create a realistic, adaptive, and evidence-grounded interview chamber.
 
@@ -54,7 +54,7 @@ The application is a single Next.js 14 (App Router) project that serves **two ro
 
 ---
 
-##  HireRank Core Pillars
+## 🏛️ HireRank Core Pillars
 
 ### 1. Resume-to-Reality
 Ingests a candidate's resume (PDF or pasted text) alongside the target Job Description to automatically extract key technical claims and formulate **3 Candidate-Reviewable Verification Topics** that anchor the interview questioning.
@@ -74,7 +74,7 @@ Every rubric score returned by the LLM is backed by an **exact verbatim quote** 
 
 ---
 
-##  End-to-End Flowchart
+## 🧭 End-to-End Flowchart
 
 The diagram below traces the full lifecycle of a candidate through HireRank: authentication, resume ingestion, the adaptive interview loop, real-time integrity monitoring, and the post-interview scoring/triage split between the two portals.
 
@@ -187,7 +187,7 @@ flowchart TD
 
 ---
 
-##  System Architecture & Technology Stack
+## 🏗️ System Architecture & Technology Stack
 
 | Layer | Technology | Purpose |
 |---|---|---|
@@ -206,7 +206,7 @@ flowchart TD
 
 ---
 
-##  Project Structure
+## 🗂️ Project Structure
 
 ```
 CTRL-C-CTRL-V-main/
@@ -269,7 +269,7 @@ CTRL-C-CTRL-V-main/
 
 ---
 
-##  Data Model (`src/types/athena.ts`)
+## 🧬 Data Model (`src/types/athena.ts`)
 
 The entire interview is described by a small set of well-typed records:
 
@@ -305,7 +305,7 @@ All routes live under `src/app/api/` and are called from the client via `fetch`.
 
 ---
 
-##  Contextual Integrity Timeline (CV Engine)
+## 🕵️ Contextual Integrity Timeline (CV Engine)
 
 Implemented in `src/lib/cvIntegrity.ts` via the `CvIntegrityTracker` class, this engine runs **entirely client-side** against MediaPipe FaceMesh landmarks &mdash; no frame or video is ever sent to a server.
 
@@ -319,7 +319,7 @@ Crucially, **no marker auto-disqualifies a candidate** &mdash; they are purely a
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js 18+ and npm
@@ -361,13 +361,13 @@ npm run lint    # Run ESLint
 
 ---
 
-##  Environment Variables
+## 🔐 Environment Variables
 
 | Variable | Required | Description |
 |---|---|---|
-| `GROQ_API_KEY` | Yes | Authenticates all Groq SDK calls (`llama-3.3-70b-versatile` for reasoning/scoring, `whisper-large-v3` for transcription). Without it, question generation, evaluation, and transcription routes will fail. |
-| `UPSTASH_REDIS_REST_URL` | Optional | Enables Upstash-backed rate limiting on API routes. |
-| `UPSTASH_REDIS_REST_TOKEN` | Optional | Paired token for the Upstash REST client. |
+| `GROQ_API_KEY` | ✅ Yes | Authenticates all Groq SDK calls (`llama-3.3-70b-versatile` for reasoning/scoring, `whisper-large-v3` for transcription). Without it, question generation, evaluation, and transcription routes will fail. |
+| `UPSTASH_REDIS_REST_URL` | ⭕ Optional | Enables Upstash-backed rate limiting on API routes. |
+| `UPSTASH_REDIS_REST_TOKEN` | ⭕ Optional | Paired token for the Upstash REST client. |
 
 ---
 
@@ -390,7 +390,7 @@ npm run lint    # Run ESLint
 
 ---
 
-##  Design Philosophy
+## 🎨 Design Philosophy
 
 - **Dignity over disqualification** &mdash; integrity signals are logged for human review, never used to silently fail a candidate.
 - **Evidence over vibes** &mdash; every score is traceable to an exact quote and timestamp, reducing evaluator bias and making feedback defensible.
@@ -409,6 +409,6 @@ npm run lint    # Run ESLint
 
 ---
 
-##  Disclaimer
+## ⚠️ Disclaimer
 
 This repository was built as a hackathon/demo project ("Project Athena"). It uses browser `localStorage` for persistence and a mock authentication flow &mdash; it is **not production-hardened** for handling real candidate PII, video, or audio data. Before any real-world deployment, add a proper database, authenticated sessions, encrypted storage, and a data-retention/consent policy appropriate for biometric and recorded-interview data.
